@@ -38,12 +38,15 @@ public class JvmDao {
 
     /**
      * SQL statement(s) to create table.
+     * 
+     * time_stamp, event_name, threads_total, " + "threads_spinning, threads_blocked, spin, block, sync, cleanup, vmop,
+     * page_trap_count
      */
-    private static final String[] TABLES_CREATE_SQL = { "create table safepoint_event (id integer identity, "
-            + "time_stamp bigint, event_name varchar(64), duration integer, young_space integer, "
-            + "old_space integer, combined_space integer, perm_space integer, young_occupancy_init integer, "
-            + "old_occupancy_init integer, combined_occupancy_init integer, perm_occupancy_init integer, "
-            + "log_entry varchar(500))" };
+    private static final String[] TABLES_CREATE_SQL = {
+            "create table safepoint_event (id integer identity, time_stamp bigint, event_name varchar(64), "
+                    + "threads_total integer, threads_spinning integer, threads_blocked integer, spin integer, "
+                    + "block integer, sync integer, cleanup integer, vmop integer, page_trap_count integer, "
+                    + "log_entry varchar(500))" };
 
     /**
      * SQL statement(s) to delete table(s).

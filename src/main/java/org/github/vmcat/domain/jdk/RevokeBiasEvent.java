@@ -14,7 +14,12 @@
  *********************************************************************************************************************/
 package org.github.vmcat.domain.jdk;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.github.vmcat.domain.SafepointEvent;
+import org.github.vmcat.util.jdk.JdkMath;
+import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
@@ -23,16 +28,18 @@ import org.github.vmcat.util.jdk.JdkUtil;
  * </p>
  * 
  * <p>
- * Biased locking is an optimization intended to reduce the overhead of uncontested locking. It assumes a thread owns a
- * monitor until another thread tries to acquire it.
+ * Biased locking is an optimization to reduce the overhead of uncontested locking. It assumes a thread owns a monitor
+ * until another thread tries to acquire it.
  * </p>
  * 
  * <p>
- * RevokeBias it the operation the JVM does when a different thread tries to acquire the monitor.
+ * RevokeBias it the operation the JVM does to undo the optimization when a different thread tries to acquire the
+ * monitor.
  * </p>
  * 
  * <p>
- * BiasedLocking is being disabled and deprecated in JDK 17: https://bugs.openjdk.java.net/browse/JDK-8231265.
+ * BiasedLocking is being disabled and deprecated in JDK 17, as it's typically not relevant to modern workloads:
+ * https://bugs.openjdk.java.net/browse/JDK-8231265.
  * </p>
  * 
  * <h3>Example Logging</h3>
@@ -44,6 +51,16 @@ import org.github.vmcat.util.jdk.JdkUtil;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  */
 public class RevokeBiasEvent implements SafepointEvent {
+
+    /**
+     * Regular expression defining the logging.
+     */
+    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " RevokeBias[ ]{23}\\[[ ]{4,6}" + JdkRegEx.NUMBER
+            + "[ ]{10}" + JdkRegEx.NUMBER + "[ ]{13,14}" + JdkRegEx.NUMBER + "[ ]{4}\\][ ]{6}\\[[ ]{5}" + JdkRegEx.TIME
+            + "[ ]{4,5}" + JdkRegEx.TIME + "[ ]{4,5}" + JdkRegEx.TIME + "[ ]{4,5}" + JdkRegEx.TIME + "[ ]{5}"
+            + JdkRegEx.TIME + "[ ]{4,5}\\][ ]{2}" + JdkRegEx.NUMBER + "[ ]*$";
+
+    private static Pattern pattern = Pattern.compile(REGEX);
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -71,27 +88,27 @@ public class RevokeBiasEvent implements SafepointEvent {
     int threadsBlocked;
 
     /**
-     * The time it took spinning threads to reach safepoint in milliseconds.
+     * The time for spinning threads to reach safepoint in milliseconds.
      */
     int timeSpin;
 
     /**
-     * The time it took blocked threads to reach safepoint in milliseconds.
+     * The time for blocked threads to reach safepoint in milliseconds.
      */
     int timeBlock;
 
     /**
-     * The time it took all threads to reach safepoint in milliseconds.
+     * The time for all threads to reach safepoint (sync) in milliseconds.
      */
     int timeSync;
 
     /**
-     * The time it took for cleanup activities in milliseconds.
+     * The time for cleanup activities in milliseconds.
      */
     int timeCleanup;
 
     /**
-     * The time it took for the safepoint activity in milliseconds.
+     * The time for the safepoint activity (vmop) in milliseconds.
      */
     int timeVmop;
 
@@ -107,6 +124,20 @@ public class RevokeBiasEvent implements SafepointEvent {
      *            The log entry for the event.
      */
     public RevokeBiasEvent(String logEntry) {
+        this.logEntry = logEntry;
+        Matcher matcher = pattern.matcher(logEntry);
+        if (matcher.find()) {
+            timestamp = JdkMath.convertSecsToMillis(matcher.group(12)).longValue();
+            threadsTotal = Integer.parseInt(matcher.group(13));
+            threadsSpinning = Integer.parseInt(matcher.group(14));
+            threadsBlocked = Integer.parseInt(matcher.group(15));
+            timeSpin = Integer.parseInt(matcher.group(16));
+            timeBlock = Integer.parseInt(matcher.group(17));
+            timeSync = Integer.parseInt(matcher.group(18));
+            timeCleanup = Integer.parseInt(matcher.group(19));
+            timeVmop = Integer.parseInt(matcher.group(20));
+            pageTrapCount = Integer.parseInt(matcher.group(21));
+        }
 
     }
 
@@ -129,11 +160,6 @@ public class RevokeBiasEvent implements SafepointEvent {
     protected void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
-
-    /**
-     * Regular expression defining the logging.
-     */
-    private static final String REGEX = "^TBD$";
 
     /**
      * Determine if the logLine matches the logging pattern(s) for this event.

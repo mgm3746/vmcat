@@ -14,26 +14,20 @@
  *********************************************************************************************************************/
 package org.github.vmcat.domain;
 
+import org.github.vmcat.util.jdk.JdkUtil;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
 /**
- * Base logging event.
- * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public interface LogEvent {
+public class TestUnknownEvent extends TestCase {
 
-    /**
-     * @return The time when the event begins, in milliseconds after JVM startup.
-     */
-    long getTimestamp();
-
-    /**
-     * @return The log entry for the event.
-     */
-    String getLogEntry();
-
-    /**
-     * @return The event identifier.
-     */
-    String getName();
+    public void testLogLine() {
+        String logLine = "Mike was here!!!";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.UNKNOWN.toString() + ".",
+                JdkUtil.parseLogLine(logLine) instanceof UnknownEvent);
+    }
 }

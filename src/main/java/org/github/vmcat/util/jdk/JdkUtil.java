@@ -15,6 +15,7 @@
 package org.github.vmcat.util.jdk;
 
 import org.github.vmcat.domain.LogEvent;
+import org.github.vmcat.domain.SafepointEvent;
 import org.github.vmcat.domain.UnknownEvent;
 import org.github.vmcat.domain.jdk.RevokeBiasEvent;
 
@@ -70,9 +71,54 @@ public class JdkUtil {
      * @return The <code>LogEventType</code> of the log entry.
      */
     public static final LogEventType identifyEventType(String logLine) {
+        if (RevokeBiasEvent.match(logLine))
+            return LogEventType.REVOKE_BIAS;
 
         // no idea what event is
         return LogEventType.UNKNOWN;
+    }
+
+    /**
+     * Create <code>SafepointEvent</code> from values.
+     * 
+     * @param eventType
+     *            Log entry <code>LogEventType</code>.
+     * @param logEntry
+     *            Log entry.
+     * @return The <code>SafepointEvent</code> for the given event values.
+     */
+    public static final SafepointEvent hydrateSafepointEvent(LogEventType eventType, String logEntry) {
+        SafepointEvent event = null;
+        switch (eventType) {
+
+        case REVOKE_BIAS:
+            event = new RevokeBiasEvent(logEntry);
+            break;
+
+        default:
+            throw new AssertionError("Unexpected event type value: " + eventType + ": " + logEntry);
+        }
+        return event;
+    }
+
+    /**
+     * @param eventType
+     *            The event type to test.
+     * @return true if the log event is should be included in the report event list, false otherwise.
+     */
+    public static final boolean isReportable(LogEventType eventType) {
+
+        boolean reportable = true;
+
+        switch (eventType) {
+        case UNKNOWN:
+            reportable = false;
+            break;
+        default:
+            break;
+        }
+
+        return reportable;
     }
 
 }
