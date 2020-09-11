@@ -1,0 +1,18 @@
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1617.723: RevokeBias                       [    2450          6            117    ]      [     8    11    21    36     0    ]  6
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1618.362: RevokeBias                       [    2455          6            172    ]      [    30     5    89    35     0    ]  4
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1618.489: RevokeBias                       [    2455          0              2    ]      [     0     0     1    32     0    ]  0
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1618.525: RevokeBias                       [    2456          0              9    ]      [     0     0     6    33     0    ]  0
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1618.579: RevokeBias                       [    2456          0             18    ]      [     0     2     4    32     0    ]  0
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1618.617: RevokeBias                       [    2456          0              4    ]      [     0     0     1    31     0    ]  0
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1618.863: RevokeBias                       [    2456          0             14    ]      [     0     0     1    32     0    ]  0
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1620.674: RevokeBias                       [    2461          4            151    ]      [    16     4    22    31     0    ]  3
+         vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
+1620.756: RevokeBias                       [    2461          0             18    ]      [     0     0     2    31     0    ]  0

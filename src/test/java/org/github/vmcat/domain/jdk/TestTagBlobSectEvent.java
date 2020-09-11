@@ -12,34 +12,34 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
+package org.github.vmcat.domain.jdk;
+
+import org.github.vmcat.util.jdk.JdkUtil;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
- * JVM environment information
- * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class Jvm {
+public class TestTagBlobSectEvent extends TestCase {
 
-    /**
-     * The JVM options for the JVM run.
-     */
-    private String options;
-
-    /**
-     * @return The JVM options.
-     */
-    public String getOptions() {
-        return options;
+    public void testParseLogLine() {
+        String logLine = "<sect index='1' size='182000' free='177710'/>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_BLOB_SECT.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagBlobSectEvent);
     }
 
-    /**
-     * @param options
-     *            The JVM options to set.
-     */
-    public void setOptions(String options) {
-        this.options = options;
+    public void testReportable() {
+        String logLine = "<sect index='1' size='182000' free='177710'/>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_BLOB_SECT.toString() + " incorrectly indentified as reportable.",
+                JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
+    public void testLogLine() {
+        String logLine = "<sect index='1' size='182000' free='177710'/>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_BLOB_SECT.toString() + ".",
+                TagBlobSectEvent.match(logLine));
+    }
 }

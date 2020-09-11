@@ -17,7 +17,7 @@ package org.github.vmcat.domain;
 import java.util.List;
 
 import org.github.vmcat.util.jdk.Analysis;
-import org.github.vmcat.util.jdk.Jvm;
+import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
 
 /**
  * JVM run data.
@@ -33,9 +33,29 @@ public class JvmRun {
     private Jvm jvm;
 
     /**
-     * Total number of safepoint events.
+     * Total number of SafepointEvent events.
      */
-    private int safepointEventCount;
+    private long safepointCount;
+
+    /**
+     * Total number of RevokeBiasEvent events.
+     */
+    private long revokeBiasCount;
+
+    /**
+     * Total RevokeBiasEvent time duration (milliseconds).
+     */
+    private long revokeBiasTime;
+
+    /**
+     * Total number of Deoptimize events.
+     */
+    private long deoptimizeCount;
+
+    /**
+     * Total Deoptimize time duration (milliseconds).
+     */
+    private long deoptimizeTime;
 
     /**
      * Log lines that do not match any existing logging patterns.
@@ -46,6 +66,11 @@ public class JvmRun {
      * Analysis.
      */
     private List<Analysis> analysis;
+
+    /**
+     * Event types.
+     */
+    private List<LogEventType> eventTypes;
 
     /**
      * Constructor accepting throughput threshold, JVM services, and JVM environment information.
@@ -65,14 +90,6 @@ public class JvmRun {
         this.jvm = jvm;
     }
 
-    public int getSafepointEventCount() {
-        return safepointEventCount;
-    }
-
-    public void setSafepointEventCount(int safepointEventCount) {
-        this.safepointEventCount = safepointEventCount;
-    }
-
     public List<String> getUnidentifiedLogLines() {
         return unidentifiedLogLines;
     }
@@ -87,6 +104,54 @@ public class JvmRun {
 
     public void setAnalysis(List<Analysis> analysis) {
         this.analysis = analysis;
+    }
+
+    public long getSafepointCount() {
+        return safepointCount;
+    }
+
+    public void setSafepointCount(long safepointCount) {
+        this.safepointCount = safepointCount;
+    }
+
+    public long getRevokeBiasCount() {
+        return revokeBiasCount;
+    }
+
+    public void setRevokeBiasCount(long revokeBiasCount) {
+        this.revokeBiasCount = revokeBiasCount;
+    }
+
+    public long getRevokeBiasTime() {
+        return revokeBiasTime;
+    }
+
+    public void setRevokeBiasTime(long revokeBiasTime) {
+        this.revokeBiasTime = revokeBiasTime;
+    }
+
+    public long getDeoptimizeCount() {
+        return deoptimizeCount;
+    }
+
+    public void setDeoptimizeCount(long deoptimizeCount) {
+        this.deoptimizeCount = deoptimizeCount;
+    }
+
+    public long getDeoptimizeTime() {
+        return deoptimizeTime;
+    }
+
+    public void setDeoptimizeTime(long deoptimizeTime) {
+        this.deoptimizeTime = deoptimizeTime;
+    }
+
+    public List<LogEventType> getEventTypes() {
+        return eventTypes;
+    }
+
+    public void setEventTypes(List<LogEventType> eventTypes) {
+        this.eventTypes = eventTypes;
     }
 
     /**

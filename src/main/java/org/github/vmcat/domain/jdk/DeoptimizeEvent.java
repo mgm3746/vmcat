@@ -24,38 +24,29 @@ import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * REVOKE_BIAS
+ * DEOPTIMIZE
  * </p>
  * 
  * <p>
- * Biased locking is an optimization to reduce the overhead of uncontested locking. It assumes a thread owns a monitor
- * until another thread tries to acquire it.
- * </p>
- * 
- * <p>
- * RevokeBias it the operation the JVM does to undo the optimization when a different thread tries to acquire the
- * monitor.
- * </p>
- * 
- * <p>
- * BiasedLocking is being disabled and deprecated in JDK 17, as it's typically not relevant to modern workloads:
- * https://bugs.openjdk.java.net/browse/JDK-8231265.
+ * When the compiler has to recompile previously compiled code due to the compiled code no longer being valid (e.g. a
+ * dynamic object has changed) or with tiered compilation when client compiled codes is replaced with server complied
+ * code.
  * </p>
  * 
  * <h3>Example Logging</h3>
  * 
  * <pre>
- * 1652.991: RevokeBias                       [    2403          0             13    ]      [     0     0     2    29     0    ]  0
+ * 4.283: Deoptimize                       [      17          0              0    ]      [     0     0     0     0     0    ]  0
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  */
-public class RevokeBiasEvent implements SafepointEvent {
+public class DeoptimizeEvent implements SafepointEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " RevokeBias[ ]{23}" + JdkRegEx.THREAD_BLOCK
+    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " Deoptimize[ ]{23}" + JdkRegEx.THREAD_BLOCK
             + "[ ]{6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2}" + JdkRegEx.NUMBER + "[ ]*$";
 
     private static Pattern pattern = Pattern.compile(REGEX);
@@ -121,7 +112,7 @@ public class RevokeBiasEvent implements SafepointEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public RevokeBiasEvent(String logEntry) {
+    public DeoptimizeEvent(String logEntry) {
         this.logEntry = logEntry;
         Matcher matcher = pattern.matcher(logEntry);
         if (matcher.find()) {
@@ -140,7 +131,7 @@ public class RevokeBiasEvent implements SafepointEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.REVOKE_BIAS.toString();
+        return JdkUtil.LogEventType.DEOPTIMIZE.toString();
     }
 
     public String getLogEntry() {

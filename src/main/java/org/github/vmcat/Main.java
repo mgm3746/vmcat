@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -38,11 +39,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.github.vmcat.domain.Jvm;
 import org.github.vmcat.domain.JvmRun;
 import org.github.vmcat.service.Manager;
 import org.github.vmcat.util.Constants;
 import org.github.vmcat.util.jdk.Analysis;
-import org.github.vmcat.util.jdk.Jvm;
+import org.github.vmcat.util.jdk.JdkMath;
 import org.json.JSONObject;
 
 /**
@@ -262,7 +264,18 @@ public class Main {
                 }
             }
 
-            // TODO: JVM information
+            // JVM information
+            if (jvmRun.getJvm().getVersion() != null || jvmRun.getJvm().getOptions() != null) {
+                bufferedWriter.write("========================================" + Constants.LINE_SEPARATOR);
+                bufferedWriter.write("JVM:" + Constants.LINE_SEPARATOR);
+                bufferedWriter.write("----------------------------------------" + Constants.LINE_SEPARATOR);
+                if (jvmRun.getJvm().getVersion() != null) {
+                    bufferedWriter.write("Version: " + jvmRun.getJvm().getVersion() + Constants.LINE_SEPARATOR);
+                }
+                if (jvmRun.getJvm().getOptions() != null) {
+                    bufferedWriter.write("Options: " + jvmRun.getJvm().getOptions() + Constants.LINE_SEPARATOR);
+                }
+            }
 
             // Summary
             bufferedWriter.write("========================================" + Constants.LINE_SEPARATOR);
@@ -270,9 +283,20 @@ public class Main {
             bufferedWriter.write("----------------------------------------" + Constants.LINE_SEPARATOR);
 
             // Safepoint stats
-            bufferedWriter.write("# Safepoint Events: " + jvmRun.getSafepointEventCount() + Constants.LINE_SEPARATOR);
-            if (jvmRun.getSafepointEventCount() > 0) {
-                // TODO:
+            bufferedWriter.write("# Safepoint Events: " + jvmRun.getSafepointCount() + Constants.LINE_SEPARATOR);
+            if (jvmRun.getRevokeBiasCount() > 0) {
+                bufferedWriter
+                        .write("# Deoptimize: " + jvmRun.getDeoptimizeCount() + System.getProperty("line.separator"));
+                BigDecimal totalDeoptimizeTime = JdkMath.convertMillisToSecs(jvmRun.getDeoptimizeTime());
+                bufferedWriter.write(
+                        "Deoptimize Time: " + totalDeoptimizeTime.toString() + " secs" + Constants.LINE_SEPARATOR);
+            }
+            if (jvmRun.getRevokeBiasCount() > 0) {
+                bufferedWriter
+                        .write("# RevokeBias: " + jvmRun.getRevokeBiasCount() + System.getProperty("line.separator"));
+                BigDecimal totalRevokeBiasTime = JdkMath.convertMillisToSecs(jvmRun.getRevokeBiasTime());
+                bufferedWriter.write(
+                        "RevokeBias Time: " + totalRevokeBiasTime.toString() + " secs" + Constants.LINE_SEPARATOR);
             }
 
             bufferedWriter.write("========================================" + Constants.LINE_SEPARATOR);

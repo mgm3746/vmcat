@@ -12,56 +12,33 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
+package org.github.vmcat.domain;
 
+import java.io.File;
+
+import org.github.vmcat.service.Manager;
 import org.github.vmcat.util.Constants;
-import org.github.vmcat.util.VmUtil;
+import org.github.vmcat.util.jdk.JdkUtil;
+import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
- * Analysis constants.
- * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public enum Analysis {
+public class TestJvmRun extends TestCase {
 
-    /**
-     * Property key for TBD.
-     */
-    ERROR_TBD("error.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    INFO_TBD("info.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    WARN_TBD("warn.tbd");
-
-    private String key;
-
-    private Analysis(final String key) {
-        this.key = key;
-    }
-
-    /**
-     * @return Analysis property file key.
-     */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * @return Analysis property file value.
-     */
-    public String getValue() {
-        return VmUtil.getPropertyValue(Constants.ANALYSIS_PROPERTY_FILE, key);
-    }
-
-    @Override
-    public String toString() {
-        return this.getKey();
+    public void testSummaryStatsRevokeBias() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset1.txt");
+        Manager manager = new Manager();
+        manager.store(testFile);
+        JvmRun jvmRun = manager.getJvmRun(new Jvm());
+        Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " event identified.",
+                jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
+        Assert.assertEquals("Event type count not correct.", 2, jvmRun.getEventTypes().size());
+        Assert.assertEquals("RevokeBiasEvent count not correct.", 9, jvmRun.getRevokeBiasCount());
+        Assert.assertEquals("RevokeBiasEvent time not correct.", 440, jvmRun.getRevokeBiasTime());
     }
 }

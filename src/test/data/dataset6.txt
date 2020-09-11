@@ -1,0 +1,3 @@
+<command>
+org.apache.karaf.main.Main
+</command>

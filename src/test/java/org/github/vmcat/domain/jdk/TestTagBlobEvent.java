@@ -12,56 +12,40 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
+package org.github.vmcat.domain.jdk;
 
-import org.github.vmcat.util.Constants;
-import org.github.vmcat.util.VmUtil;
+import org.github.vmcat.util.jdk.JdkUtil;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
- * Analysis constants.
- * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public enum Analysis {
+public class TestTagBlobEvent extends TestCase {
 
-    /**
-     * Property key for TBD.
-     */
-    ERROR_TBD("error.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    INFO_TBD("info.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    WARN_TBD("warn.tbd");
-
-    private String key;
-
-    private Analysis(final String key) {
-        this.key = key;
+    public void testParseLogLine() {
+        String logLine = "<blob name='MethodHandlesAdapterBlob' size='182000'>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_BLOB.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagBlobEvent);
     }
 
-    /**
-     * @return Analysis property file key.
-     */
-    public String getKey() {
-        return key;
+    public void testReportable() {
+        String logLine = "<blob name='MethodHandlesAdapterBlob' size='182000'>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_TTY.toString() + " incorrectly indentified as reportable.",
+                JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
-    /**
-     * @return Analysis property file value.
-     */
-    public String getValue() {
-        return VmUtil.getPropertyValue(Constants.ANALYSIS_PROPERTY_FILE, key);
+    public void testLogLine() {
+        String logLine = "<blob name='MethodHandlesAdapterBlob' size='182000'>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_BLOB.toString() + ".",
+                TagBlobEvent.match(logLine));
     }
 
-    @Override
-    public String toString() {
-        return this.getKey();
+    public void testLogLineEndTag() {
+        String logLine = "</blob>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_BLOB.toString() + ".",
+                TagBlobEvent.match(logLine));
     }
 }

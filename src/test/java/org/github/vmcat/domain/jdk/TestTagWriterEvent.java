@@ -12,56 +12,34 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
+package org.github.vmcat.domain.jdk;
 
-import org.github.vmcat.util.Constants;
-import org.github.vmcat.util.VmUtil;
+import org.github.vmcat.util.jdk.JdkUtil;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
- * Analysis constants.
- * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public enum Analysis {
+public class TestTagWriterEvent extends TestCase {
 
-    /**
-     * Property key for TBD.
-     */
-    ERROR_TBD("error.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    INFO_TBD("info.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    WARN_TBD("warn.tbd");
-
-    private String key;
-
-    private Analysis(final String key) {
-        this.key = key;
+    public void testParseLogLine() {
+        String logLine = "<writer thread='140624122316544'/>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_WRITER.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagWriterEvent);
     }
 
-    /**
-     * @return Analysis property file key.
-     */
-    public String getKey() {
-        return key;
+    public void testReportable() {
+        String logLine = "<writer thread='140624122316544'/>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_WRITER.toString() + " incorrectly indentified as reportable.",
+                JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
-    /**
-     * @return Analysis property file value.
-     */
-    public String getValue() {
-        return VmUtil.getPropertyValue(Constants.ANALYSIS_PROPERTY_FILE, key);
-    }
-
-    @Override
-    public String toString() {
-        return this.getKey();
+    public void testLogLine() {
+        String logLine = "<writer thread='140624122316544'/>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_WRITER.toString() + ".",
+                TagWriterEvent.match(logLine));
     }
 }

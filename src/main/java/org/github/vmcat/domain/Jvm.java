@@ -12,56 +12,47 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
-
-import org.github.vmcat.util.Constants;
-import org.github.vmcat.util.VmUtil;
+package org.github.vmcat.domain;
 
 /**
- * Analysis constants.
+ * JVM environment information
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public enum Analysis {
+public class Jvm {
 
     /**
-     * Property key for TBD.
+     * The JVM options for the JVM run.
      */
-    ERROR_TBD("error.tbd"),
+    private String options;
 
     /**
-     * Property key for TBD.
+     * JVM version.
      */
-    INFO_TBD("info.tbd"),
+    private String version;
 
     /**
-     * Property key for TBD.
+     * @return The JVM options.
      */
-    WARN_TBD("warn.tbd");
-
-    private String key;
-
-    private Analysis(final String key) {
-        this.key = key;
+    public String getOptions() {
+        return options;
     }
 
     /**
-     * @return Analysis property file key.
+     * @param options
+     *            The JVM options to set.
      */
-    public String getKey() {
-        return key;
+    public void setOptions(String options) {
+        this.options = options;
     }
 
-    /**
-     * @return Analysis property file value.
-     */
-    public String getValue() {
-        return VmUtil.getPropertyValue(Constants.ANALYSIS_PROPERTY_FILE, key);
+    public String getVersion() {
+        return version;
     }
 
-    @Override
-    public String toString() {
-        return this.getKey();
+    public void setVersion(String version) {
+        this.version = version;
     }
+
 }

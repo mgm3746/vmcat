@@ -19,15 +19,25 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 
 import org.github.vmcat.Main;
+import org.github.vmcat.domain.Jvm;
 import org.github.vmcat.domain.JvmRun;
 import org.github.vmcat.domain.LogEvent;
 import org.github.vmcat.domain.SafepointEvent;
+import org.github.vmcat.domain.TagEvent;
 import org.github.vmcat.domain.UnknownEvent;
+import org.github.vmcat.domain.jdk.TagVmArgumentsArgsEvent;
+import org.github.vmcat.domain.jdk.TagVmArgumentsCommandEvent;
+import org.github.vmcat.domain.jdk.TagVmArgumentsLauncherEvent;
+import org.github.vmcat.domain.jdk.TagVmArgumentsPropertiesEvent;
+import org.github.vmcat.domain.jdk.TagVmVersionInfoEvent;
+import org.github.vmcat.domain.jdk.TagVmVersionNameEvent;
+import org.github.vmcat.domain.jdk.TagVmVersionReleaseEvent;
 import org.github.vmcat.hsql.JvmDao;
+import org.github.vmcat.util.VmUtil;
 import org.github.vmcat.util.jdk.JdkUtil;
-import org.github.vmcat.util.jdk.Jvm;
 
 /**
  * <p>
@@ -72,11 +82,42 @@ public class Manager {
                 LogEvent event = JdkUtil.parseLogLine(logLine);
                 if (event instanceof SafepointEvent) {
                     jvmDao.addSafepointEvent((SafepointEvent) event);
+                } else if (event instanceof TagEvent) {
+                    if ((event instanceof TagVmVersionNameEvent || event instanceof TagVmVersionReleaseEvent
+                            || event instanceof TagVmArgumentsCommandEvent
+                            || event instanceof TagVmArgumentsLauncherEvent)
+                            && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
+                        // flush data
+                        logLine = bufferedReader.readLine();
+                    } else if (event instanceof TagVmVersionInfoEvent
+                            && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
+                        jvmDao.setVersion(bufferedReader.readLine());
+                    } else if (event instanceof TagVmArgumentsArgsEvent
+                            && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
+                        jvmDao.setOptions(bufferedReader.readLine());
+                    } else if (event instanceof TagVmArgumentsPropertiesEvent
+                            && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
+                        boolean flushProperties = true;
+                        while (flushProperties) {
+                            LogEvent nextEvent = JdkUtil.parseLogLine(bufferedReader.readLine());
+                            if (nextEvent instanceof TagVmArgumentsPropertiesEvent) {
+                                // reached properties end tag
+                                flushProperties = false;
+                            }
+                        }
+                    }
                 } else if (event instanceof UnknownEvent) {
                     if (jvmDao.getUnidentifiedLogLines().size() < Main.REJECT_LIMIT) {
                         jvmDao.getUnidentifiedLogLines().add(logLine);
                     }
                 }
+                // Populate events list.
+                List<JdkUtil.LogEventType> eventTypes = jvmDao.getEventTypes();
+                JdkUtil.LogEventType eventType = JdkUtil.determineEventType(event.getName());
+                if (!eventTypes.contains(eventType)) {
+                    eventTypes.add(eventType);
+                }
+
                 logLine = bufferedReader.readLine();
             }
 
@@ -111,8 +152,16 @@ public class Manager {
      */
     public JvmRun getJvmRun(Jvm jvm) {
         JvmRun jvmRun = new JvmRun(jvm);
+        jvmRun.setSafepointCount(jvmDao.getTotalCount());
+        jvmRun.setRevokeBiasCount(jvmDao.getSafepointCount(JdkUtil.LogEventType.REVOKE_BIAS));
+        jvmRun.setRevokeBiasTime(jvmDao.getSafepointTime(JdkUtil.LogEventType.REVOKE_BIAS));
+        jvmRun.setDeoptimizeCount(jvmDao.getSafepointCount(JdkUtil.LogEventType.DEOPTIMIZE));
+        jvmRun.setDeoptimizeTime(jvmDao.getSafepointTime(JdkUtil.LogEventType.DEOPTIMIZE));
         jvmRun.setUnidentifiedLogLines(jvmDao.getUnidentifiedLogLines());
         jvmRun.setAnalysis(jvmDao.getAnalysis());
+        jvmRun.setEventTypes(jvmDao.getEventTypes());
+        jvmRun.getJvm().setVersion(jvmDao.getVersion());
+        jvmRun.getJvm().setOptions(jvmDao.getOptions());
         jvmRun.doAnalysis();
         return jvmRun;
     }

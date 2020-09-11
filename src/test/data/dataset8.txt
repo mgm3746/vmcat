@@ -1,0 +1,7 @@
+<properties>
+java.vm.specification.name=Java Virtual Machine Specification
+java.vm.version=25.242-b08-debug
+java.vm.name=OpenJDK 64-Bit Server VM
+java.vm.info=mixed mode, sharing
+java.vm.specification.version=1.8
+</properties>

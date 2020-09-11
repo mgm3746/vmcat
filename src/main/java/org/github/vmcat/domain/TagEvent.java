@@ -12,56 +12,14 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
-
-import org.github.vmcat.util.Constants;
-import org.github.vmcat.util.VmUtil;
+package org.github.vmcat.domain;
 
 /**
- * Analysis constants.
+ * Base xml tag event.
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public enum Analysis {
+public interface TagEvent extends LogEvent {
 
-    /**
-     * Property key for TBD.
-     */
-    ERROR_TBD("error.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    INFO_TBD("info.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    WARN_TBD("warn.tbd");
-
-    private String key;
-
-    private Analysis(final String key) {
-        this.key = key;
-    }
-
-    /**
-     * @return Analysis property file key.
-     */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * @return Analysis property file value.
-     */
-    public String getValue() {
-        return VmUtil.getPropertyValue(Constants.ANALYSIS_PROPERTY_FILE, key);
-    }
-
-    @Override
-    public String toString() {
-        return this.getKey();
-    }
 }

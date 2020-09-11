@@ -124,7 +124,7 @@ public class TestMain extends TestCase {
             // Method arguments
             String[] args = new String[2];
             // Test typo (extra 'h')
-            args[0] = "--hhelp";           
+            args[0] = "--hhelp";
             args[1] = System.getProperty("user.dir");
             // Pass null object since parseOptions is static
             Object o = parseOptions.invoke(null, (Object) args);

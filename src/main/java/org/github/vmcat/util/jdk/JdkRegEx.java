@@ -64,15 +64,34 @@ public class JdkRegEx {
      * Regular expression for recognized decorations prepending logging.
      * 
      * <p>
-     * 1) uptime:
+     * 1) uptime: 1668.902:
      * </p>
-     * 
-     * <pre>
-     * 1668.902: no vm operation                  [    2402          2            123    ]      [     9    83    93    
-     * 29     0    ]  2
-     * </pre>
      */
     public static final String DECORATOR = "(" + JdkRegEx.DATESTAMP + ": )?" + JdkRegEx.TIMESTAMP + ":";
+
+    /**
+     * Regular expression for thread data.
+     * 
+     * For example:
+     * 
+     * <pre>
+     * [    2404          0              1    ]
+     * </pre>
+     */
+    public static final String THREAD_BLOCK = "\\[[ ]{4,6}" + JdkRegEx.NUMBER + "[ ]{9,10}" + JdkRegEx.NUMBER
+            + "[ ]{12,14}" + JdkRegEx.NUMBER + "[ ]{4}\\]";
+
+    /**
+     * Regular expression for times data.
+     * 
+     * For example:
+     * 
+     * <pre>
+     * [    13    55    73    29  1387    ]
+     * </pre>
+     */
+    public static final String TIMES_BLOCK = "\\[[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}"
+            + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}\\]";
 
     /**
      * Make default constructor private so the class cannot be instantiated.

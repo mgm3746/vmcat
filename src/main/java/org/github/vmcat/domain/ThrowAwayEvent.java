@@ -15,7 +15,7 @@
 package org.github.vmcat.domain;
 
 /**
- * Logging events that are not essential for GC analysis and can be ignored (or discarded during preprocessing).
+ * Logging events that are not essential for analysis.
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 

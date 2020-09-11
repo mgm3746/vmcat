@@ -88,4 +88,39 @@ public class TestRevokeBiasEvent extends TestCase {
         Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
                 RevokeBiasEvent.match(logLine));
     }
+
+    public void testLogLineAlternateSpaces3() {
+        String logLine = "1617.723: RevokeBias                       [    2450          6            117    ]      "
+                + "[     8    11    21    36     0    ]  6";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
+                RevokeBiasEvent.match(logLine));
+    }
+
+    public void testLogLineAlternateSpaces4() {
+        String logLine = "1620.674: RevokeBias                       [    2461          4            151    ]      "
+                + "[    16     4    22    31     0    ]  3";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
+                RevokeBiasEvent.match(logLine));
+    }
+
+    public void testLogLineAlternateSpaces5() {
+        String logLine = "54.980: RevokeBias                       [     120          2              8    ]      "
+                + "[     0     3     3     1    10    ]  0";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
+                RevokeBiasEvent.match(logLine));
+    }
+
+    public void testLogLineAlternateSpaces6() {
+        String logLine = "148.815: RevokeBias                       [     261         12             18    ]      "
+                + "[     0     1     1     2     0    ]  8";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
+                RevokeBiasEvent.match(logLine));
+    }
+
+    public void testLogLineAlternateSpaces7() {
+        String logLine = "251.278: RevokeBias                       [    2268          0             12    ]      "
+                + "[     0    12    13    17   111    ]  0";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
+                RevokeBiasEvent.match(logLine));
+    }
 }

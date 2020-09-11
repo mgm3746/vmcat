@@ -12,56 +12,29 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
+package org.github.vmcat.util;
 
-import org.github.vmcat.util.Constants;
-import org.github.vmcat.util.VmUtil;
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
- * Analysis constants.
- * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public enum Analysis {
+public class TestVmUtil extends TestCase {
 
-    /**
-     * Property key for TBD.
-     */
-    ERROR_TBD("error.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    INFO_TBD("info.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    WARN_TBD("warn.tbd");
-
-    private String key;
-
-    private Analysis(final String key) {
-        this.key = key;
+    public void testPartialLog() {
+        Assert.assertFalse("Not a partial log.", VmUtil.isPartialLog(59999));
+        Assert.assertTrue("Is a partial log.", VmUtil.isPartialLog(60001));
     }
 
-    /**
-     * @return Analysis property file key.
-     */
-    public String getKey() {
-        return key;
+    public void testHtmlStartTag() {
+        String tag = "<name>";
+        Assert.assertTrue("'" + tag + "' not identified as a start tag.", VmUtil.isHtmlEventStartTag(tag));
     }
 
-    /**
-     * @return Analysis property file value.
-     */
-    public String getValue() {
-        return VmUtil.getPropertyValue(Constants.ANALYSIS_PROPERTY_FILE, key);
-    }
-
-    @Override
-    public String toString() {
-        return this.getKey();
+    public void testHtmlEndTag() {
+        String tag = "</name>";
+        Assert.assertFalse("'" + tag + "' incorrectly identified as a start tag.", VmUtil.isHtmlEventStartTag(tag));
     }
 }

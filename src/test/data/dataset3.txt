@@ -1,0 +1,3 @@
+<release>
+25.242-b08-debug
+</release>

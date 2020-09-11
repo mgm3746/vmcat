@@ -12,56 +12,59 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
+package org.github.vmcat.util;
 
-import org.github.vmcat.util.Constants;
-import org.github.vmcat.util.VmUtil;
+import java.util.ResourceBundle;
 
 /**
- * Analysis constants.
+ * Common vm collection utility methods and constants.
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public enum Analysis {
+public class VmUtil {
 
     /**
-     * Property key for TBD.
+     * Make default constructor private so the class cannot be instantiated.
      */
-    ERROR_TBD("error.tbd"),
+    private VmUtil() {
 
-    /**
-     * Property key for TBD.
-     */
-    INFO_TBD("info.tbd"),
-
-    /**
-     * Property key for TBD.
-     */
-    WARN_TBD("warn.tbd");
-
-    private String key;
-
-    private Analysis(final String key) {
-        this.key = key;
     }
 
     /**
-     * @return Analysis property file key.
+     * Check if the <code>TagHtmlEvent</code> is a start tag.
+     * 
+     * @param htmlTag
+     *            The html tag.
+     * @return true if a start tag, false otherwise.
      */
-    public String getKey() {
-        return key;
+    public static final boolean isHtmlEventStartTag(String htmlTag) {
+        return htmlTag.matches("^<[^/].+$");
     }
 
     /**
-     * @return Analysis property file value.
+     * Determine whether the first JVM event timestamp indicates a partial log file or events that were not in a
+     * recognizable format.
+     * 
+     * @param firstTimestamp
+     *            The first JVM event timestamp (milliseconds).
+     * @return True if the first timestamp is within the first timestamp threshold, false otherwise.
      */
-    public String getValue() {
-        return VmUtil.getPropertyValue(Constants.ANALYSIS_PROPERTY_FILE, key);
+    public static final boolean isPartialLog(long firstTimestamp) {
+        return (firstTimestamp > Constants.FIRST_TIMESTAMP_THRESHOLD * 1000);
     }
 
-    @Override
-    public String toString() {
-        return this.getKey();
+    /**
+     * Retrieve the value for a given property file and key.
+     * 
+     * @param propertyFile
+     *            The property file.
+     * @param key
+     *            The property key.
+     * @return The value for the given property file and key.
+     */
+    public static final String getPropertyValue(String propertyFile, String key) {
+        ResourceBundle rb = ResourceBundle.getBundle("META-INF" + System.getProperty("file.separator") + propertyFile);
+        return rb.getString(key);
     }
 }

@@ -1,0 +1,3 @@
+<launcher>
+SUN_STANDARD
+</launcher>

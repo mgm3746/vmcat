@@ -12,56 +12,76 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.util.jdk;
+package org.github.vmcat.domain.jdk;
 
-import org.github.vmcat.util.Constants;
-import org.github.vmcat.util.VmUtil;
+import org.github.vmcat.domain.TagEvent;
+import org.github.vmcat.domain.ThrowAwayEvent;
+import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
- * Analysis constants.
+ * <p>
+ * TAG_BLOB_SECT
+ * </p>
+ * 
+ * <p>
+ * blog sect tag.
+ * </p>
+ * 
+ * <pre>
+ * &lt;sect index='1' size='182000' free='177710'/&gt;
+ * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public enum Analysis {
+public class TagBlobSectEvent implements TagEvent, ThrowAwayEvent {
 
     /**
-     * Property key for TBD.
+     * Regular expression defining the logging.
      */
-    ERROR_TBD("error.tbd"),
+    private static final String REGEX = "^<sect .+/>$";
 
     /**
-     * Property key for TBD.
+     * The log entry for the event. Can be used for debugging purposes.
      */
-    INFO_TBD("info.tbd"),
+    private String logEntry;
 
     /**
-     * Property key for TBD.
+     * The time when the GC event started in milliseconds after JVM startup.
      */
-    WARN_TBD("warn.tbd");
+    private long timestamp;
 
-    private String key;
+    /**
+     * Create event from log entry.
+     * 
+     * @param logEntry
+     *            The log entry for the event.
+     */
+    public TagBlobSectEvent(String logEntry) {
+        this.logEntry = logEntry;
+        this.timestamp = 0L;
+    }
 
-    private Analysis(final String key) {
-        this.key = key;
+    public String getLogEntry() {
+        return logEntry;
+    }
+
+    public String getName() {
+        return JdkUtil.LogEventType.TAG_BLOB_SECT.toString();
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
     /**
-     * @return Analysis property file key.
+     * Determine if the logLine matches the logging pattern(s) for this event.
+     * 
+     * @param logLine
+     *            The log line to test.
+     * @return true if the log line matches the event pattern, false otherwise.
      */
-    public String getKey() {
-        return key;
-    }
-
-    /**
-     * @return Analysis property file value.
-     */
-    public String getValue() {
-        return VmUtil.getPropertyValue(Constants.ANALYSIS_PROPERTY_FILE, key);
-    }
-
-    @Override
-    public String toString() {
-        return this.getKey();
+    public static final boolean match(String logLine) {
+        return logLine.matches(REGEX);
     }
 }

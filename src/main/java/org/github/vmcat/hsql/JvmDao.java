@@ -17,6 +17,7 @@ package org.github.vmcat.hsql;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -84,6 +85,16 @@ public class JvmDao {
     private List<SafepointEvent> safepointBatch;
 
     /**
+     * The JVM options for the JVM run.
+     */
+    private String options;
+
+    /**
+     * JVM version.
+     */
+    private String version;
+
+    /**
      * Default constructor.
      */
     public JvmDao() {
@@ -131,7 +142,6 @@ public class JvmDao {
                 throw new RuntimeException("Error closing Statement.");
             }
         }
-
         eventTypes = new ArrayList<LogEventType>();
         analysis = new ArrayList<Analysis>();
         unidentifiedLogLines = new ArrayList<String>();
@@ -151,6 +161,30 @@ public class JvmDao {
             processSafepointBatch();
         }
         safepointBatch.add(event);
+    }
+
+    public List<LogEventType> getEventTypes() {
+        return eventTypes;
+    }
+
+    public void setEventTypes(List<LogEventType> eventTypes) {
+        this.eventTypes = eventTypes;
+    }
+
+    public String getOptions() {
+        return options;
+    }
+
+    public void setOptions(String options) {
+        this.options = options;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     /**
@@ -233,4 +267,117 @@ public class JvmDao {
         }
     }
 
+    /**
+     * The total number of safepoint events.
+     * 
+     * @return total number of safepoint events.
+     */
+    public synchronized int getTotalCount() {
+        int count = 0;
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery("select count(id) from safepoint_event");
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error determining safepoint_event event count.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return count;
+    }
+
+    /**
+     * The total number of safepoint events.
+     * 
+     * @param eventType
+     *            the type of safepoint event.
+     * @return total number of safepoint events.
+     */
+    public synchronized int getSafepointCount(LogEventType eventType) {
+        int count = 0;
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery(
+                    "select count(id) from safepoint_event where event_name='" + eventType.toString() + "'");
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error determining RevokeBiasEvent count.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return count;
+    }
+
+    /**
+     * The total safepoint time.
+     * 
+     * @param eventType
+     *            the type of safepoint event.
+     * @return total pause duration (milliseconds).
+     */
+    public synchronized long getSafepointTime(LogEventType eventType) {
+        long totalPause = 0;
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            rs = statement
+                    .executeQuery("select sum(sync), sum(cleanup),sum(vmop) from safepoint_event where event_name='"
+                            + eventType.toString() + "'");
+            if (rs.next()) {
+                totalPause = rs.getLong(1);
+                totalPause = totalPause + rs.getLong(2);
+                totalPause = totalPause + rs.getLong(3);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error determining total RevokeBiasEvent time.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return totalPause;
+    }
 }

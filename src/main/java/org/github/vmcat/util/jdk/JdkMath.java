@@ -249,7 +249,7 @@ public class JdkMath {
         }
         kilobytes = kilobytes.setScale(0, RoundingMode.HALF_EVEN);
         return kilobytes.intValue();
-    }   
+    }
 
     /**
      * @param parallelism
