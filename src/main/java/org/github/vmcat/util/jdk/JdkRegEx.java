@@ -23,11 +23,9 @@ package org.github.vmcat.util.jdk;
 public class JdkRegEx {
 
     /**
-     * Timestamp. Milliseconds since JVM started.
-     * 
-     * For example: 487.020
+     * Blank line.
      */
-    public static final String TIMESTAMP = "(\\d{0,12}[\\.\\,]\\d{3})";
+    public static final String BLANK_LINE = "^\\s+$";
 
     /**
      * Datestamp. Absolute date/time the JVM uses with <code>-XX:+PrintGCDateStamps</code>.
@@ -42,25 +40,6 @@ public class JdkRegEx {
             + "(\\d{4}))";
 
     /**
-     * The time as a whole number representing milliseconds.
-     * 
-     * For example: 7291
-     */
-    public static final String TIME = "(\\d{1,8})";
-
-    /**
-     * The number of threads or page trap count.
-     * 
-     * For example: 123
-     */
-    public static final String NUMBER = "(\\d{1,8})";
-
-    /**
-     * Blank line.
-     */
-    public static final String BLANK_LINE = "^\\s+$";
-
-    /**
      * Regular expression for recognized decorations prepending logging.
      * 
      * <p>
@@ -68,6 +47,13 @@ public class JdkRegEx {
      * </p>
      */
     public static final String DECORATOR = "(" + JdkRegEx.DATESTAMP + ": )?" + JdkRegEx.TIMESTAMP + ":";
+
+    /**
+     * The number of threads or page trap count.
+     * 
+     * For example: 123
+     */
+    public static final String NUMBER = "(\\d{1,8})";
 
     /**
      * Regular expression for thread data.
@@ -82,6 +68,13 @@ public class JdkRegEx {
             + "[ ]{12,14}" + JdkRegEx.NUMBER + "[ ]{4}\\]";
 
     /**
+     * The time as a whole number representing milliseconds.
+     * 
+     * For example: 7291
+     */
+    public static final String TIME = "(\\d{1,8})";
+
+    /**
      * Regular expression for times data.
      * 
      * For example:
@@ -92,6 +85,49 @@ public class JdkRegEx {
      */
     public static final String TIMES_BLOCK = "\\[[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}"
             + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}\\]";
+
+    /**
+     * Timestamp. Milliseconds since JVM started.
+     * 
+     * For example: 487.020
+     */
+    public static final String TIMESTAMP = "(\\d{0,12}[\\.\\,]\\d{3})";
+
+    /**
+     * <p>
+     * Bulk operation when the compiler has to recompile previously compiled code due to the compiled code no longer
+     * being valid (e.g. a dynamic object has changed) or with tiered compilation when client compiled code is replaced
+     * with server compiled code.
+     * </p>
+     */
+    public static final String TRIGGER_BULK_REVOKE_BIAS = "BulkRevokeBias";
+
+    /**
+     * <p>
+     * When the compiler has to recompile previously compiled code due to the compiled code no longer being valid (e.g.
+     * a dynamic object has changed) or with tiered compilation when client compiled code is replaced with server
+     * compiled code.
+     * </p>
+     */
+    public static final String TRIGGER_DEOPTIMIZE = "Deoptimize";
+
+    /**
+     * <p>
+     * Biased locking is an optimization to reduce the overhead of uncontested locking. It assumes a thread owns a
+     * monitor until another thread tries to acquire it.
+     * </p>
+     * 
+     * <p>
+     * RevokeBias it the operation the JVM does to undo the optimization when a different thread tries to acquire the
+     * monitor.
+     * </p>
+     * 
+     * <p>
+     * BiasedLocking is being disabled and deprecated in JDK 17, as it's typically not relevant to modern workloads:
+     * https://bugs.openjdk.java.net/browse/JDK-8231265.
+     * </p>
+     */
+    public static final String TRIGGER_REVOKE_BIAS = "RevokeBias";
 
     /**
      * Make default constructor private so the class cannot be instantiated.

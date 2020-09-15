@@ -22,7 +22,6 @@ import org.github.vmcat.domain.jdk.SafepointEvent;
 import org.github.vmcat.util.Constants;
 import org.github.vmcat.util.VmUtil;
 import org.github.vmcat.util.jdk.Analysis;
-import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
 
 /**
@@ -50,7 +49,7 @@ public class JvmRun {
     private long safepointEventCount;
 
     /**
-     * Total SafePointEvent pause duration (microseconds).
+     * Total SafePointEvent pause duration (milliseconds).
      */
     private long safepointTotalPause;
 
@@ -83,6 +82,11 @@ public class JvmRun {
      * Event types.
      */
     private List<LogEventType> eventTypes;
+
+    /**
+     * Maximum pause duration (milliseconds).
+     */
+    private int maxPause;
 
     /**
      * Constructor accepting throughput threshold, JVM services, and JVM environment information.
@@ -174,6 +178,14 @@ public class JvmRun {
         this.lastSafepointEvent = lastSafepointEvent;
     }
 
+    public int getMaxPause() {
+        return maxPause;
+    }
+
+    public void setMaxPause(int maxPause) {
+        this.maxPause = maxPause;
+    }
+
     /**
      * Do analysis.
      */
@@ -216,26 +228,6 @@ public class JvmRun {
     }
 
     /**
-     * @return Throughput based only on garbage collection as a percent rounded to the nearest integer. CG throughput is
-     *         the percent of time not spent doing GC. 0 means all time was spent doing GC. 100 means no time was spent
-     *         doing GC.
-     */
-    public long gethroughput() {
-        long gcThroughput;
-        if (safepointEventCount > 0) {
-            long timeNotGc = getJvmRunDuration() - new Long(safepointTotalPause).longValue();
-            BigDecimal throughput = new BigDecimal(timeNotGc);
-            throughput = throughput.divide(new BigDecimal(getJvmRunDuration()), 2, RoundingMode.HALF_EVEN);
-            throughput = throughput.movePointRight(2);
-            gcThroughput = throughput.longValue();
-
-        } else {
-            gcThroughput = 100L;
-        }
-        return gcThroughput;
-    }
-
-    /**
      * @return JVM run duration (milliseconds).
      */
     public long getJvmRunDuration() {
@@ -248,14 +240,13 @@ public class JvmRun {
         }
 
         long end = 0;
-        // Use either last gc or last timestamp and add duration of gc/stop
         long lastSafepointEventTimeStamp = 0;
         long lastSafepointEventDuration = 0;
         if (lastSafepointEvent != null) {
             lastSafepointEventTimeStamp = lastSafepointEvent.getTimestamp();
             lastSafepointEventDuration = lastSafepointEvent.getDuration();
         }
-        end = lastSafepointEventTimeStamp + JdkMath.convertMicrosToMillis(lastSafepointEventDuration).longValue();
+        end = lastSafepointEventTimeStamp + lastSafepointEventDuration;
 
         return end - start;
     }
@@ -266,18 +257,18 @@ public class JvmRun {
      *         spent in safepoint.
      */
     public long getThroughput() {
-        long gcThroughput;
+        long safepointThroughput;
         if (safepointEventCount > 0) {
-            long timeNotGc = getJvmRunDuration() - new Long(safepointTotalPause).longValue();
-            BigDecimal throughput = new BigDecimal(timeNotGc);
+            long timeNotSafepoint = getJvmRunDuration() - new Long(safepointTotalPause).longValue();
+            BigDecimal throughput = new BigDecimal(timeNotSafepoint);
             throughput = throughput.divide(new BigDecimal(getJvmRunDuration()), 2, RoundingMode.HALF_EVEN);
             throughput = throughput.movePointRight(2);
-            gcThroughput = throughput.longValue();
+            safepointThroughput = throughput.longValue();
 
         } else {
-            gcThroughput = 100L;
+            safepointThroughput = 100L;
         }
-        return gcThroughput;
+        return safepointThroughput;
     }
 
 }

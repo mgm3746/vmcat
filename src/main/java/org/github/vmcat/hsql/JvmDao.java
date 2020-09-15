@@ -41,11 +41,11 @@ public class JvmDao {
     /**
      * SQL statement(s) to create table.
      * 
-     * time_stamp, event_name, threads_total, " + "threads_spinning, threads_blocked, spin, block, sync, cleanup, vmop,
+     * time_stamp, event_type, threads_total, " + "threads_spinning, threads_blocked, spin, block, sync, cleanup, vmop,
      * page_trap_count
      */
     private static final String[] TABLES_CREATE_SQL = {
-            "create table safepoint_event (id integer identity, time_stamp bigint, event_name varchar(64), "
+            "create table safepoint_event (id integer identity, time_stamp bigint, event_type varchar(64), "
                     + "threads_total integer, threads_spinning integer, threads_blocked integer, spin integer, "
                     + "block integer, sync integer, cleanup integer, vmop integer, page_trap_count integer, "
                     + "log_entry varchar(500))" };
@@ -195,12 +195,12 @@ public class JvmDao {
 
         PreparedStatement pst = null;
         try {
-            String sqlInsertSafepointEvent = "insert into safepoint_event (time_stamp, event_name, threads_total, "
+            String sqlInsertSafepointEvent = "insert into safepoint_event (time_stamp, event_type, threads_total, "
                     + "threads_spinning, threads_blocked, spin, block, sync, cleanup, vmop, page_trap_count, "
                     + "log_entry) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
             final int TIME_STAMP_INDEX = 1;
-            final int EVENT_NAME_INDEX = 2;
+            final int EVENT_TYPE_INDEX = 2;
             final int THREADS_TOTAL_INDEX = 3;
             final int THREADS_SPIN_INDEX = 4;
             final int THREADS_BLOCK_INDEX = 5;
@@ -217,7 +217,8 @@ public class JvmDao {
             for (int i = 0; i < safepointBatch.size(); i++) {
                 SafepointEvent event = safepointBatch.get(i);
                 pst.setLong(TIME_STAMP_INDEX, event.getTimestamp());
-                pst.setString(EVENT_NAME_INDEX, event.getName());
+                // Use trigger for event name
+                pst.setString(EVENT_TYPE_INDEX, event.getTrigger());
                 pst.setInt(THREADS_TOTAL_INDEX, event.getThreadsTotal());
                 pst.setInt(THREADS_SPIN_INDEX, event.getThreadsSpinning());
                 pst.setInt(THREADS_BLOCK_INDEX, event.getThreadsBlocked());
@@ -285,7 +286,7 @@ public class JvmDao {
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            throw new RuntimeException("Error determining safepoint_event event count.");
+            throw new RuntimeException("Error determining total safepoint count.");
         } finally {
             try {
                 rs.close();
@@ -316,9 +317,7 @@ public class JvmDao {
         ResultSet rs = null;
         try {
             statement = connection.createStatement();
-            rs = statement
-                    .executeQuery("select sum(sync), sum(cleanup),sum(vmop) from safepoint_event where event_name='"
-                            + eventType.toString() + "'");
+            rs = statement.executeQuery("select sum(sync), sum(cleanup),sum(vmop) from safepoint_event");
             if (rs.next()) {
                 totalPause = rs.getLong(1);
                 totalPause = totalPause + rs.getLong(2);
@@ -326,7 +325,7 @@ public class JvmDao {
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            throw new RuntimeException("Error determining total RevokeBiasEvent time.");
+            throw new RuntimeException("Error determining total safepoint time.");
         } finally {
             try {
                 rs.close();
@@ -356,13 +355,12 @@ public class JvmDao {
         try {
             statement = connection.createStatement();
             StringBuffer sql = new StringBuffer();
-            sql.append("select time_stamp, event_name, sync, cleanup, vmop, log_entry from safepoint_event order by "
+            sql.append("select time_stamp, event_type, sync, cleanup, vmop, log_entry from safepoint_event order by "
                     + "time_stamp asc, id asc");
             rs = statement.executeQuery(sql.toString());
             while (rs.next()) {
-                LogEventType eventType = JdkUtil.determineEventType(rs.getString(2));
-                SafepointEvent event = JdkUtil.hydrateSafepointEvent(eventType, rs.getString(6), rs.getLong(1),
-                        rs.getInt(3), rs.getInt(4), rs.getInt(5));
+                SafepointEvent event = JdkUtil.hydrateSafepointEvent(LogEventType.SAFEPOINT, rs.getString(6),
+                        rs.getLong(1), rs.getInt(3), rs.getInt(4), rs.getInt(5));
                 events.add(event);
             }
         } catch (SQLException e) {
@@ -485,15 +483,13 @@ public class JvmDao {
         ResultSet rs = null;
         try {
             statement = connection.createStatement();
-            rs = statement.executeQuery("select sum(sync), sum(cleanup), sum(vmop) from safepoint_event");
+            rs = statement.executeQuery("select sum(sync + cleanup + vmop) from safepoint_event");
             if (rs.next()) {
                 totalPause = rs.getLong(1);
-                totalPause = totalPause + rs.getLong(2);
-                totalPause = totalPause + rs.getLong(3);
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            throw new RuntimeException("Error determining total pause time.");
+            throw new RuntimeException("Error determining safepoint total pause time.");
         } finally {
             try {
                 rs.close();
@@ -509,5 +505,40 @@ public class JvmDao {
             }
         }
         return totalPause;
+    }
+
+    /**
+     * The maximum safepoint pause time.
+     * 
+     * @return maximum pause duration (milliseconds).
+     */
+    public synchronized int getMaxPause() {
+        int maxPause = 0;
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery("select max(sync + cleanup + vmop) from safepoint_event");
+            if (rs.next()) {
+                maxPause = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error determine maximum pause time.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return maxPause;
     }
 }

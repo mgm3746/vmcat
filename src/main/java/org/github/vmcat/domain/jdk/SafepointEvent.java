@@ -28,19 +28,17 @@ import org.github.vmcat.util.jdk.JdkUtil;
  * </p>
  * 
  * <p>
- * Biased locking is an optimization to reduce the overhead of uncontested locking. It assumes a thread owns a monitor
- * until another thread tries to acquire it.
+ * All threads in the JVM are stopped.
  * </p>
  * 
  * <p>
- * RevokeBias it the operation the JVM does to undo the optimization when a different thread tries to acquire the
- * monitor.
+ * Referenences:
  * </p>
  * 
- * <p>
- * BiasedLocking is being disabled and deprecated in JDK 17, as it's typically not relevant to modern workloads:
- * https://bugs.openjdk.java.net/browse/JDK-8231265.
- * </p>
+ * <ul>
+ * <li><a href=
+ * "http://hg.openjdk.java.net/jdk8/jdk8/hotspot/file/87ee5ee27509/src/share/vm/runtime/vm_operations.hpp">JDK8</a>.</li>
+ * </ul>
  * 
  * <h3>Example Logging</h3>
  * 
@@ -53,10 +51,16 @@ import org.github.vmcat.util.jdk.JdkUtil;
 public class SafepointEvent implements LogEvent {
 
     /**
+     * Trigger(s) regular expression(s).
+     */
+    private static final String TRIGGER = "(" + JdkRegEx.TRIGGER_BULK_REVOKE_BIAS + "|" + JdkRegEx.TRIGGER_DEOPTIMIZE
+            + "|" + JdkRegEx.TRIGGER_REVOKE_BIAS + ")";
+
+    /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " (Deoptimize|RevokeBias)[ ]{23}"
-            + JdkRegEx.THREAD_BLOCK + "[ ]{6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2}" + JdkRegEx.NUMBER + "[ ]*$";
+    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " " + TRIGGER + "[ ]{1,23}" + JdkRegEx.THREAD_BLOCK
+            + "[ ]{6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2}" + JdkRegEx.NUMBER + "[ ]*$";
 
     private static Pattern pattern = Pattern.compile(REGEX);
 

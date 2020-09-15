@@ -30,7 +30,30 @@ import junit.framework.TestCase;
  */
 public class TestJvmRun extends TestCase {
 
-    public void testSummaryStatsRevokeBias() {
+    public void testSummaryStats() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset9.txt");
+        Manager manager = new Manager();
+        manager.store(testFile);
+        JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
+        Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " event identified.",
+                jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
+        Assert.assertTrue(JdkUtil.LogEventType.SAFEPOINT.toString() + " event not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.SAFEPOINT));
+        Assert.assertTrue(JdkUtil.LogEventType.HEADER.toString() + " event not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.HEADER));
+        Assert.assertEquals("Safepoint event count not correct.", 9, jvmRun.getSafepointEventCount());
+        Assert.assertEquals("Event type count not correct.", 2, jvmRun.getEventTypes().size());
+        Assert.assertEquals("Safepoint first timestamp not correct.", 7723,
+                jvmRun.getFirstSafepointEvent().getTimestamp());
+        Assert.assertEquals("Safepoint last timestamp not correct.", 10756,
+                jvmRun.getLastSafepointEvent().getTimestamp());
+        Assert.assertEquals("Safepoint total pause not correct.", 440, jvmRun.getSafepointTotalPause());
+        Assert.assertEquals("Safepoint last duration not correct.", 33, jvmRun.getLastSafepointEvent().getDuration());
+        Assert.assertEquals("JVM run duration not correct.", 10789, jvmRun.getJvmRunDuration());
+        Assert.assertEquals("Throughput not correct.", 96, jvmRun.getThroughput());
+    }
+
+    public void testSummaryStatsPartialLog() {
         File testFile = new File(Constants.TEST_DATA_DIR + "dataset1.txt");
         Manager manager = new Manager();
         manager.store(testFile);
@@ -49,7 +72,7 @@ public class TestJvmRun extends TestCase {
                 jvmRun.getLastSafepointEvent().getTimestamp());
         Assert.assertEquals("Safepoint total pause not correct.", 440, jvmRun.getSafepointTotalPause());
         Assert.assertEquals("Safepoint last duration not correct.", 33, jvmRun.getLastSafepointEvent().getDuration());
-        Assert.assertEquals("JVM run duration not correct.", 3033, jvmRun.getJvmRunDuration());
-        Assert.assertEquals("Throughput not correct.", 85, jvmRun.getThroughput());
+        Assert.assertEquals("JVM run duration not correct.", 3066, jvmRun.getJvmRunDuration());
+        Assert.assertEquals("Throughput not correct.", 86, jvmRun.getThroughput());
     }
 }

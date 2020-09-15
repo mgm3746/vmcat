@@ -224,12 +224,12 @@ public class Manager {
         jvmRun.setEventTypes(jvmDao.getEventTypes());
         jvmRun.setFirstSafepointEvent(jvmDao.getFirstSafepointEvent());
         jvmRun.setLastSafepointEvent(jvmDao.getLastSafepointEvent());
+        jvmRun.setMaxPause(jvmDao.getMaxPause());
         jvmRun.setSafepointEventCount(jvmDao.getSafepointEventCount());
         jvmRun.setSafepointTotalPause(jvmDao.getSafepointTotalPause());
         jvmRun.setUnidentifiedLogLines(jvmDao.getUnidentifiedLogLines());
         jvmRun.getJvm().setVersion(jvmDao.getVersion());
         jvmRun.getJvm().setOptions(jvmDao.getOptions());
-
         jvmRun.doAnalysis();
         return jvmRun;
     }

@@ -74,7 +74,7 @@ public class JdkUtil {
      * Defined triggers.
      */
     public enum TriggerType {
-        Deoptimize, RevokeBias
+        BulkRevokeBias, Deoptimize, RevokeBias
     };
 
     /**
@@ -346,5 +346,23 @@ public class JdkUtil {
         }
         matcher.appendTail(sb);
         return sb.toString();
+    }
+
+    /**
+     * Check to see if a log line includes any datestamps.
+     * 
+     * @param logLine
+     *            The log line.
+     * @return True if the log line includes a datestamp, false otherwise..
+     */
+    public static final String getDateStamp(String logLine) {
+        String datestamp = null;
+        String regex = "^(.*)" + JdkRegEx.DATESTAMP + "(.*)$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(logLine);
+        if (matcher.find()) {
+            datestamp = matcher.group(2);
+        }
+        return datestamp;
     }
 }

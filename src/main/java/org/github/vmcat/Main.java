@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -47,11 +48,14 @@ import org.github.vmcat.service.Manager;
 import org.github.vmcat.util.Constants;
 import org.github.vmcat.util.VmUtil;
 import org.github.vmcat.util.jdk.Analysis;
+import org.github.vmcat.util.jdk.JdkMath;
+import org.github.vmcat.util.jdk.JdkUtil;
+import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
 import org.json.JSONObject;
 
 /**
  * <p>
- * vmcat main class. A controller that prepares the model (by parsing GC log entries) and provides analysis (the report
+ * vmcat main class. A controller that prepares the model (by parsinglog entries) and provides analysis (the report
  * view).
  * </p>
  * 
@@ -84,7 +88,7 @@ public class Main {
 
     /**
      * @param args
-     *            The argument list includes one or more scope options followed by the name of the gc log file to
+     *            The argument list includes one or more scope options followed by the name of the vm log file to
      *            inspect.
      */
     public static void main(String[] args) {
@@ -203,7 +207,7 @@ public class Main {
         if (cmd.getArgList().size() > 0) {
             logFileName = (String) cmd.getArgList().get(cmd.getArgList().size() - 1);
         }
-        // Ensure gc log file exists.
+        // Ensure vm log file exists.
         if (logFileName == null) {
             throw new ParseException("Missing log file not");
         }
@@ -322,7 +326,54 @@ public class Main {
             bufferedWriter.write("SUMMARY:" + Constants.LINE_SEPARATOR);
             bufferedWriter.write("----------------------------------------" + Constants.LINE_SEPARATOR);
 
-            // TODO
+            if (jvmRun.getSafepointEventCount() > 0) {
+                bufferedWriter.write("Event Types: ");
+                List<LogEventType> eventTypes = jvmRun.getEventTypes();
+                Iterator<LogEventType> iterator = eventTypes.iterator();
+                boolean firstEvent = true;
+                while (iterator.hasNext()) {
+                    LogEventType eventType = iterator.next();
+                    // Only reportable events
+                    if (JdkUtil.isReportable(eventType)) {
+                        if (!firstEvent) {
+                            bufferedWriter.write(", ");
+                        }
+                        bufferedWriter.write(eventType.toString());
+                        firstEvent = false;
+                    }
+                }
+                bufferedWriter.write(Constants.LINE_SEPARATOR);
+                // Throughput
+                bufferedWriter.write("Throughput: ");
+                if (jvmRun.getThroughput() == 100 && jvmRun.getSafepointEventCount() > 0) {
+                    // Provide clue it's rounded to 100
+                    bufferedWriter.write("~");
+                }
+                bufferedWriter.write(jvmRun.getThroughput() + "%" + Constants.LINE_SEPARATOR);
+                // Max pause
+                BigDecimal maxPause = JdkMath.convertMillisToSecs(jvmRun.getMaxPause());
+                bufferedWriter.write("Max Pause: " + maxPause.toString() + " secs" + Constants.LINE_SEPARATOR);
+                // Total pause time
+                BigDecimal totalPause = JdkMath.convertMillisToSecs(jvmRun.getSafepointTotalPause());
+                bufferedWriter.write("Total Pause: " + totalPause.toString() + " secs" + Constants.LINE_SEPARATOR);
+            }
+            // First/last timestamps
+            if (jvmRun.getSafepointEventCount() > 0) {
+                // First event
+                String firstEventDatestamp = JdkUtil.getDateStamp(jvmRun.getFirstSafepointEvent().getLogEntry());
+                if (firstEventDatestamp != null) {
+                    bufferedWriter.write("First Datestamp: ");
+                    bufferedWriter.write(firstEventDatestamp);
+                    bufferedWriter.write(Constants.LINE_SEPARATOR);
+                }
+                // Last event
+                String lastEventDatestamp = JdkUtil.getDateStamp(jvmRun.getLastSafepointEvent().getLogEntry());
+                if (lastEventDatestamp != null) {
+                    bufferedWriter.write("Last Datestamp: ");
+                    bufferedWriter.write(lastEventDatestamp);
+                    bufferedWriter.write(Constants.LINE_SEPARATOR);
+                }
+            }
 
             bufferedWriter.write("========================================" + Constants.LINE_SEPARATOR);
 

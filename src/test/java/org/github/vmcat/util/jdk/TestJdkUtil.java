@@ -55,7 +55,7 @@ public class TestJdkUtil extends TestCase {
         int timeVmop1 = 350;
         SafepointEvent priorEvent = new SafepointEvent(logLine1, timestamp1, timeSync1, timeCleanup1, timeVmop1);
 
-        // 1 second between GCs with duration of .5 seconds
+        // 1 second between events with duration of .5 seconds
         String logLine2 = "test2";
         long timestamp2 = 11000L;
         int timeSync2 = 100;
@@ -84,7 +84,7 @@ public class TestJdkUtil extends TestCase {
         int timeVmop1 = 70;
         SafepointEvent priorEvent = new SafepointEvent(logLine1, timestamp1, timeSync1, timeCleanup1, timeVmop1);
 
-        // 123 ms between GCs with duration of 33 ms
+        // 123 ms between events with duration of 33 ms
         String logLine2 = "test2";
         long timestamp2 = 10123L;
         int timeSync2 = 1;
@@ -156,4 +156,18 @@ public class TestJdkUtil extends TestCase {
             Assert.assertTrue("Expected TimeWarpException not thrown.", e instanceof TimeWarpException);
         }
     }
+
+    public void testNoDateStamp() {
+        String logLine = "85.389: RevokeBias                       [      24          0              1    ]      "
+                + "[     0     0     0     0     0    ]  0";
+        Assert.assertNull("Datestamp not parsed correctly.", JdkUtil.getDateStamp(logLine));
+    }
+
+    public void testDateStampBeginning() {
+        String logLine = "2017-01-30T10:06:50.070+0400: 6.357: RevokeBias                       "
+                + "[      24          0              1    ]      [     0     0     0     0     0    ]  0";
+        Assert.assertEquals("Datestamp not parsed correctly.", "2017-01-30T10:06:50.070+0400",
+                JdkUtil.getDateStamp(logLine));
+    }
+
 }
