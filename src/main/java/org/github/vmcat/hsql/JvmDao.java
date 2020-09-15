@@ -24,9 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.github.vmcat.domain.jdk.SafepointEvent;
+import org.github.vmcat.domain.jdk.SafepointEventSummary;
 import org.github.vmcat.util.jdk.Analysis;
 import org.github.vmcat.util.jdk.JdkUtil;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
+import org.github.vmcat.util.jdk.JdkUtil.TriggerType;
 
 /**
  * <p>
@@ -40,12 +42,9 @@ public class JvmDao {
 
     /**
      * SQL statement(s) to create table.
-     * 
-     * time_stamp, event_type, threads_total, " + "threads_spinning, threads_blocked, spin, block, sync, cleanup, vmop,
-     * page_trap_count
      */
     private static final String[] TABLES_CREATE_SQL = {
-            "create table safepoint_event (id integer identity, time_stamp bigint, event_type varchar(64), "
+            "create table safepoint_event (id integer identity, time_stamp bigint, trigger_type varchar(64), "
                     + "threads_total integer, threads_spinning integer, threads_blocked integer, spin integer, "
                     + "block integer, sync integer, cleanup integer, vmop integer, page_trap_count integer, "
                     + "log_entry varchar(500))" };
@@ -61,9 +60,9 @@ public class JvmDao {
     private static Connection connection;
 
     /**
-     * List of all event types associate with JVM run.
+     * Event types.
      */
-    List<LogEventType> eventTypes;
+    private List<LogEventType> eventTypes;
 
     /**
      * Analysis property keys.
@@ -195,12 +194,12 @@ public class JvmDao {
 
         PreparedStatement pst = null;
         try {
-            String sqlInsertSafepointEvent = "insert into safepoint_event (time_stamp, event_type, threads_total, "
+            String sqlInsertSafepointEvent = "insert into safepoint_event (time_stamp, trigger_type, threads_total, "
                     + "threads_spinning, threads_blocked, spin, block, sync, cleanup, vmop, page_trap_count, "
                     + "log_entry) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
             final int TIME_STAMP_INDEX = 1;
-            final int EVENT_TYPE_INDEX = 2;
+            final int TRIGGER_TYPE_INDEX = 2;
             final int THREADS_TOTAL_INDEX = 3;
             final int THREADS_SPIN_INDEX = 4;
             final int THREADS_BLOCK_INDEX = 5;
@@ -218,7 +217,7 @@ public class JvmDao {
                 SafepointEvent event = safepointBatch.get(i);
                 pst.setLong(TIME_STAMP_INDEX, event.getTimestamp());
                 // Use trigger for event name
-                pst.setString(EVENT_TYPE_INDEX, event.getTrigger());
+                pst.setString(TRIGGER_TYPE_INDEX, event.getTriggerType().toString());
                 pst.setInt(THREADS_TOTAL_INDEX, event.getThreadsTotal());
                 pst.setInt(THREADS_SPIN_INDEX, event.getThreadsSpinning());
                 pst.setInt(THREADS_BLOCK_INDEX, event.getThreadsBlocked());
@@ -355,7 +354,7 @@ public class JvmDao {
         try {
             statement = connection.createStatement();
             StringBuffer sql = new StringBuffer();
-            sql.append("select time_stamp, event_type, sync, cleanup, vmop, log_entry from safepoint_event order by "
+            sql.append("select time_stamp, trigger_type, sync, cleanup, vmop, log_entry from safepoint_event order by "
                     + "time_stamp asc, id asc");
             rs = statement.executeQuery(sql.toString());
             while (rs.next()) {
@@ -540,5 +539,45 @@ public class JvmDao {
             }
         }
         return maxPause;
+    }
+
+    /**
+     * Generate <code>SafepointEventSummary</code>s.
+     * 
+     * @return <code>List</code> of <code>SafepointEventSummary</code>s.
+     */
+    public synchronized List<SafepointEventSummary> getSafepointEventSummaries() {
+        List<SafepointEventSummary> safepointEventSummaries = new ArrayList<SafepointEventSummary>();
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            StringBuffer sql = new StringBuffer();
+            sql.append("select trigger_type, count(id), sum(sync + cleanup + vmop) from safepoint_event group by "
+                    + "trigger_type order by sum(sync + cleanup + vmop) desc");
+            rs = statement.executeQuery(sql.toString());
+            while (rs.next()) {
+                TriggerType triggerType = JdkUtil.identifyTriggerType(rs.getString(1));
+                SafepointEventSummary summary = new SafepointEventSummary(triggerType, rs.getLong(2), rs.getLong(3));
+                safepointEventSummaries.add(summary);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error retrieving safepoint event summaries.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return safepointEventSummaries;
     }
 }

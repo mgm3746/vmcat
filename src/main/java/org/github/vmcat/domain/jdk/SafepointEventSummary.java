@@ -12,21 +12,58 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.domain;
+package org.github.vmcat.domain.jdk;
+
+import org.github.vmcat.util.jdk.JdkUtil.TriggerType;
 
 /**
- * Exception when the {@link org.github.vmcat.domain.jdk.SafepointEvent} chronology is not possible. For example, a
- * {@link org.github.vmcat.domain.jdk.SafepointEvent} that starts before a previous
- * {@link org.github.vmcat.domain.jdk.SafepointEvent} finishes.
+ * <code>SafepointEvent</code> summary used for reporting
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-@SuppressWarnings("serial")
-public class TimeWarpException extends RuntimeException {
+public class SafepointEventSummary {
 
-    public TimeWarpException(String string) {
-        super(string);
+    /**
+     * The <code>TriggerType</code>
+     */
+    private TriggerType triggerType;
+
+    /**
+     * Total number of events.
+     */
+    private long count;
+
+    /**
+     * Total pause time (milliseconds).
+     */
+    private long pause;
+
+    /**
+     * Default constructor.
+     * 
+     * @param triggerType
+     *            The <code>TriggerType</code>.
+     * @param count
+     *            Number of events.
+     * @param pause
+     *            Pause time of events
+     */
+    public SafepointEventSummary(TriggerType triggerType, long count, long pause) {
+        this.triggerType = triggerType;
+        this.count = count;
+        this.pause = pause;
     }
 
+    public TriggerType getTriggerType() {
+        return triggerType;
+    }
+
+    public long getCount() {
+        return count;
+    }
+
+    public long getPause() {
+        return pause;
+    }
 }

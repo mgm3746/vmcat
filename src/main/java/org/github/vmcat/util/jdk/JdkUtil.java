@@ -74,7 +74,11 @@ public class JdkUtil {
      * Defined triggers.
      */
     public enum TriggerType {
-        BulkRevokeBias, Deoptimize, RevokeBias
+        BULK_REVOKE_BIAS, COLLECT_FOR_METADATA_ALLOCATION, DEOPTIMIZE, ENABLE_BIASED_LOCKING, FIND_DEADLOCKS,
+        //
+        FORCE_SAFEPOINT, NO_VM_OPERATION, PARALLEL_GC_FAILED_ALLOCATION, PARALLEL_GC_SYSTEM_GC, PRINT_JNI,
+        //
+        PRINT_THREADS, REVOKE_BIAS, THREAD_DUMP, UNKNOWN
     };
 
     /**
@@ -208,6 +212,45 @@ public class JdkUtil {
     }
 
     /**
+     * Identify the safepoint trigger.
+     * 
+     * @param trigger
+     *            The trigger.
+     * @return The <code>TriggerType</code>.
+     */
+    public static final TriggerType identifyTriggerType(String trigger) {
+        if (TriggerType.BULK_REVOKE_BIAS.toString().matches(trigger))
+            return TriggerType.BULK_REVOKE_BIAS;
+        if (TriggerType.COLLECT_FOR_METADATA_ALLOCATION.toString().matches(trigger))
+            return TriggerType.COLLECT_FOR_METADATA_ALLOCATION;
+        if (TriggerType.DEOPTIMIZE.toString().matches(trigger))
+            return TriggerType.DEOPTIMIZE;
+        if (TriggerType.ENABLE_BIASED_LOCKING.toString().matches(trigger))
+            return TriggerType.ENABLE_BIASED_LOCKING;
+        if (TriggerType.FIND_DEADLOCKS.toString().matches(trigger))
+            return TriggerType.FIND_DEADLOCKS;
+        if (TriggerType.FORCE_SAFEPOINT.toString().matches(trigger))
+            return TriggerType.FORCE_SAFEPOINT;
+        if (TriggerType.NO_VM_OPERATION.toString().matches(trigger))
+            return TriggerType.NO_VM_OPERATION;
+        if (TriggerType.PARALLEL_GC_FAILED_ALLOCATION.toString().matches(trigger))
+            return TriggerType.PARALLEL_GC_FAILED_ALLOCATION;
+        if (TriggerType.PARALLEL_GC_SYSTEM_GC.toString().matches(trigger))
+            return TriggerType.PARALLEL_GC_SYSTEM_GC;
+        if (TriggerType.PRINT_JNI.toString().matches(trigger))
+            return TriggerType.PRINT_JNI;
+        if (TriggerType.PRINT_THREADS.toString().matches(trigger))
+            return TriggerType.PRINT_THREADS;
+        if (TriggerType.REVOKE_BIAS.toString().matches(trigger))
+            return TriggerType.REVOKE_BIAS;
+        if (TriggerType.THREAD_DUMP.toString().matches(trigger))
+            return TriggerType.THREAD_DUMP;
+
+        // no idea what trigger is
+        return TriggerType.UNKNOWN;
+    }
+
+    /**
      * Create <code>SafepointEvent</code> from values.
      * 
      * @param eventType
@@ -280,7 +323,7 @@ public class JdkUtil {
     }
 
     /**
-     * Determine if the <code>SafepointEvent</code> should be classified as a bottleneck.
+     * TriggerType Determine if the <code>SafepointEvent</code> should be classified as a bottleneck.
      * 
      * @param event
      *            Current <code>SafepointEvent</code>.
@@ -295,8 +338,8 @@ public class JdkUtil {
             int throughputThreshold) throws TimeWarpException {
 
         /*
-         * Current event should not start until prior even finishes. Allow 1 thousandth of a second overlap to account
-         * for precision and rounding limitations.
+         * Current event should not start until prior even finishes. Allow 1 thousandth of a second overlap to account,
+         * DEOPTIMIZE, ENABLE_BIASED_LOCKING, REVOKE_BIAS for precision and rounding limitations.
          */
         if (safepointEvent.getTimestamp() < (event.getTimestamp() + event.getDuration() - 1)) {
             throw new TimeWarpException("Event overlap: " + Constants.LINE_SEPARATOR + event.getLogEntry()

@@ -21,6 +21,7 @@ import org.github.vmcat.domain.LogEvent;
 import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
+import org.github.vmcat.util.jdk.JdkUtil.TriggerType;
 
 /**
  * <p>
@@ -53,13 +54,18 @@ public class SafepointEvent implements LogEvent {
     /**
      * Trigger(s) regular expression(s).
      */
-    private static final String TRIGGER = "(" + JdkRegEx.TRIGGER_BULK_REVOKE_BIAS + "|" + JdkRegEx.TRIGGER_DEOPTIMIZE
-            + "|" + JdkRegEx.TRIGGER_REVOKE_BIAS + ")";
+    private static final String TRIGGER = "(" + JdkRegEx.TRIGGER_BULK_REVOKE_BIAS + "|"
+            + JdkRegEx.TRIGGER_COLLECT_FOR_METADATA_ALLOCATION + "|" + JdkRegEx.TRIGGER_DEOPTIMIZE + "|"
+            + JdkRegEx.TRIGGER_ENABLE_BIASED_LOCKING + "|" + JdkRegEx.TRIGGER_FIND_DEADLOCKS + "|"
+            + JdkRegEx.TRIGGER_FORCE_SAFEPOINT + "|" + JdkRegEx.TRIGGER_NO_VM_OPERATION + "|"
+            + JdkRegEx.TRIGGER_PARALLEL_GC_FAILED_ALLOCATION + "|" + JdkRegEx.TRIGGER_PARALLEL_GC_SYSTEM_GC + "|"
+            + JdkRegEx.TRIGGER_PRINT_JNI + "|" + JdkRegEx.TRIGGER_PRINT_THREADS + "|" + JdkRegEx.TRIGGER_REVOKE_BIAS
+            + "|" + JdkRegEx.TRIGGER_THREAD_DUMP + ")";
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " " + TRIGGER + "[ ]{1,23}" + JdkRegEx.THREAD_BLOCK
+    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " " + TRIGGER + "[ ]{1,25}" + JdkRegEx.THREAD_BLOCK
             + "[ ]{6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2}" + JdkRegEx.NUMBER + "[ ]*$";
 
     private static Pattern pattern = Pattern.compile(REGEX);
@@ -120,9 +126,9 @@ public class SafepointEvent implements LogEvent {
     int pageTrapCount;
 
     /**
-     * The trigger for the safepoint event.
+     * The <code>TriggerType</code> for the safepoint event.
      */
-    private String trigger;
+    private TriggerType triggerType;
 
     /**
      * Create event from log entry.
@@ -135,7 +141,34 @@ public class SafepointEvent implements LogEvent {
         Matcher matcher = pattern.matcher(logEntry);
         if (matcher.find()) {
             timestamp = JdkMath.convertSecsToMillis(matcher.group(12)).longValue();
-            trigger = matcher.group(13);
+            String trigger = matcher.group(13);
+            if (trigger.equals(JdkRegEx.TRIGGER_BULK_REVOKE_BIAS)) {
+                triggerType = JdkUtil.TriggerType.BULK_REVOKE_BIAS;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_COLLECT_FOR_METADATA_ALLOCATION)) {
+                triggerType = JdkUtil.TriggerType.COLLECT_FOR_METADATA_ALLOCATION;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_DEOPTIMIZE)) {
+                triggerType = JdkUtil.TriggerType.DEOPTIMIZE;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_ENABLE_BIASED_LOCKING)) {
+                triggerType = JdkUtil.TriggerType.ENABLE_BIASED_LOCKING;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_FIND_DEADLOCKS)) {
+                triggerType = JdkUtil.TriggerType.FIND_DEADLOCKS;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_FORCE_SAFEPOINT)) {
+                triggerType = JdkUtil.TriggerType.FORCE_SAFEPOINT;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_NO_VM_OPERATION)) {
+                triggerType = JdkUtil.TriggerType.NO_VM_OPERATION;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_PARALLEL_GC_FAILED_ALLOCATION)) {
+                triggerType = JdkUtil.TriggerType.PARALLEL_GC_FAILED_ALLOCATION;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_PARALLEL_GC_SYSTEM_GC)) {
+                triggerType = JdkUtil.TriggerType.PARALLEL_GC_SYSTEM_GC;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_PRINT_JNI)) {
+                triggerType = JdkUtil.TriggerType.PRINT_JNI;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_PRINT_THREADS)) {
+                triggerType = JdkUtil.TriggerType.PRINT_THREADS;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_REVOKE_BIAS)) {
+                triggerType = JdkUtil.TriggerType.REVOKE_BIAS;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_THREAD_DUMP)) {
+                triggerType = JdkUtil.TriggerType.THREAD_DUMP;
+            }
             threadsTotal = Integer.parseInt(matcher.group(14));
             threadsSpinning = Integer.parseInt(matcher.group(15));
             threadsBlocked = Integer.parseInt(matcher.group(16));
@@ -278,8 +311,8 @@ public class SafepointEvent implements LogEvent {
         return timeSync + timeCleanup + timeVmop;
     }
 
-    public String getTrigger() {
-        return trigger;
+    public TriggerType getTriggerType() {
+        return triggerType;
     }
 
 }

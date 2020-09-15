@@ -19,6 +19,7 @@ import java.math.RoundingMode;
 import java.util.List;
 
 import org.github.vmcat.domain.jdk.SafepointEvent;
+import org.github.vmcat.domain.jdk.SafepointEventSummary;
 import org.github.vmcat.util.Constants;
 import org.github.vmcat.util.VmUtil;
 import org.github.vmcat.util.jdk.Analysis;
@@ -84,6 +85,11 @@ public class JvmRun {
     private List<LogEventType> eventTypes;
 
     /**
+     * <code>SafepointEventSummary</code> used for reporting.
+     */
+    private List<SafepointEventSummary> safepointEventSummaries;
+
+    /**
      * Maximum pause duration (milliseconds).
      */
     private int maxPause;
@@ -128,6 +134,14 @@ public class JvmRun {
 
     public void setEventTypes(List<LogEventType> eventTypes) {
         this.eventTypes = eventTypes;
+    }
+
+    public List<SafepointEventSummary> getSafepointEventSummaries() {
+        return safepointEventSummaries;
+    }
+
+    public void setSafepointEventSummaries(List<SafepointEventSummary> safepointEventSummaries) {
+        this.safepointEventSummaries = safepointEventSummaries;
     }
 
     public List<String> getBottlenecks() {

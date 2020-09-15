@@ -227,6 +227,7 @@ public class Manager {
         jvmRun.setMaxPause(jvmDao.getMaxPause());
         jvmRun.setSafepointEventCount(jvmDao.getSafepointEventCount());
         jvmRun.setSafepointTotalPause(jvmDao.getSafepointTotalPause());
+        jvmRun.setSafepointEventSummaries(jvmDao.getSafepointEventSummaries());
         jvmRun.setUnidentifiedLogLines(jvmDao.getUnidentifiedLogLines());
         jvmRun.getJvm().setVersion(jvmDao.getVersion());
         jvmRun.getJvm().setOptions(jvmDao.getOptions());

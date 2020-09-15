@@ -37,10 +37,10 @@ public class TestJvmRun extends TestCase {
         JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " event identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
-        Assert.assertTrue(JdkUtil.LogEventType.SAFEPOINT.toString() + " event not identified.",
-                jvmRun.getEventTypes().contains(LogEventType.SAFEPOINT));
         Assert.assertTrue(JdkUtil.LogEventType.HEADER.toString() + " event not identified.",
                 jvmRun.getEventTypes().contains(LogEventType.HEADER));
+        Assert.assertTrue(JdkUtil.LogEventType.SAFEPOINT.toString() + " event not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.SAFEPOINT));
         Assert.assertEquals("Safepoint event count not correct.", 9, jvmRun.getSafepointEventCount());
         Assert.assertEquals("Event type count not correct.", 2, jvmRun.getEventTypes().size());
         Assert.assertEquals("Safepoint first timestamp not correct.", 7723,
@@ -60,10 +60,10 @@ public class TestJvmRun extends TestCase {
         JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " event identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
-        Assert.assertTrue(JdkUtil.LogEventType.SAFEPOINT.toString() + " event not identified.",
-                jvmRun.getEventTypes().contains(LogEventType.SAFEPOINT));
         Assert.assertTrue(JdkUtil.LogEventType.HEADER.toString() + " event not identified.",
                 jvmRun.getEventTypes().contains(LogEventType.HEADER));
+        Assert.assertTrue(JdkUtil.LogEventType.SAFEPOINT.toString() + " event not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.SAFEPOINT));
         Assert.assertEquals("Safepoint event count not correct.", 9, jvmRun.getSafepointEventCount());
         Assert.assertEquals("Event type count not correct.", 2, jvmRun.getEventTypes().size());
         Assert.assertEquals("Safepoint first timestamp not correct.", 1617723,

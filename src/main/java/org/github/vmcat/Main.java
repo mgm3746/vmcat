@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -44,13 +45,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.github.vmcat.domain.Jvm;
 import org.github.vmcat.domain.JvmRun;
+import org.github.vmcat.domain.jdk.SafepointEventSummary;
 import org.github.vmcat.service.Manager;
 import org.github.vmcat.util.Constants;
 import org.github.vmcat.util.VmUtil;
 import org.github.vmcat.util.jdk.Analysis;
 import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkUtil;
-import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
 import org.json.JSONObject;
 
 /**
@@ -327,22 +328,32 @@ public class Main {
             bufferedWriter.write("----------------------------------------" + Constants.LINE_SEPARATOR);
 
             if (jvmRun.getSafepointEventCount() > 0) {
-                bufferedWriter.write("Event Types: ");
-                List<LogEventType> eventTypes = jvmRun.getEventTypes();
-                Iterator<LogEventType> iterator = eventTypes.iterator();
-                boolean firstEvent = true;
-                while (iterator.hasNext()) {
-                    LogEventType eventType = iterator.next();
-                    // Only reportable events
-                    if (JdkUtil.isReportable(eventType)) {
-                        if (!firstEvent) {
-                            bufferedWriter.write(", ");
-                        }
-                        bufferedWriter.write(eventType.toString());
-                        firstEvent = false;
-                    }
-                }
+                bufferedWriter.write("Triggers: ");
                 bufferedWriter.write(Constants.LINE_SEPARATOR);
+                List<SafepointEventSummary> summaries = jvmRun.getSafepointEventSummaries();
+                Iterator<SafepointEventSummary> iterator = summaries.iterator();
+                while (iterator.hasNext()) {
+                    SafepointEventSummary summary = iterator.next();
+                    bufferedWriter.write(summary.getTriggerType().toString());
+                    bufferedWriter.write(": ");
+                    bufferedWriter.write("" + summary.getCount());
+                    bufferedWriter.write(": ");
+                    BigDecimal pause = JdkMath.convertMillisToSecs(summary.getPause());
+                    bufferedWriter.write(pause.toString());
+                    bufferedWriter.write(" secs (");
+                    BigDecimal percent = new BigDecimal(summary.getPause());
+                    percent = percent.divide(new BigDecimal(jvmRun.getSafepointTotalPause()), 2,
+                            RoundingMode.HALF_EVEN);
+                    percent = percent.movePointRight(2);
+                    if (percent.intValue() == 0 || percent.intValue() == 100) {
+                        // Provide clue it's rounded
+                        bufferedWriter.write("~");
+                    }
+                    bufferedWriter.write(percent.toString());
+
+                    bufferedWriter.write("%)");
+                    bufferedWriter.write(Constants.LINE_SEPARATOR);
+                }
                 // Throughput
                 bufferedWriter.write("Throughput: ");
                 if (jvmRun.getThroughput() == 100 && jvmRun.getSafepointEventCount() > 0) {
@@ -365,6 +376,12 @@ public class Main {
                     bufferedWriter.write("First Datestamp: ");
                     bufferedWriter.write(firstEventDatestamp);
                     bufferedWriter.write(Constants.LINE_SEPARATOR);
+                } else {
+                    bufferedWriter.write("First Timestamp: ");
+                    BigDecimal firstEventTimestamp = JdkMath
+                            .convertMillisToSecs(jvmRun.getFirstSafepointEvent().getTimestamp());
+                    bufferedWriter.write(firstEventTimestamp.toString());
+                    bufferedWriter.write(" secs" + Constants.LINE_SEPARATOR);
                 }
                 // Last event
                 String lastEventDatestamp = JdkUtil.getDateStamp(jvmRun.getLastSafepointEvent().getLogEntry());
@@ -372,6 +389,12 @@ public class Main {
                     bufferedWriter.write("Last Datestamp: ");
                     bufferedWriter.write(lastEventDatestamp);
                     bufferedWriter.write(Constants.LINE_SEPARATOR);
+                } else {
+                    bufferedWriter.write("Last Timestamp: ");
+                    BigDecimal lastEventTimestamp = JdkMath
+                            .convertMillisToSecs(jvmRun.getLastSafepointEvent().getTimestamp());
+                    bufferedWriter.write(lastEventTimestamp.toString());
+                    bufferedWriter.write(" secs" + Constants.LINE_SEPARATOR);
                 }
             }
 
