@@ -23,8 +23,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.github.vmcat.domain.SafepointEvent;
+import org.github.vmcat.domain.jdk.SafepointEvent;
 import org.github.vmcat.util.jdk.Analysis;
+import org.github.vmcat.util.jdk.JdkUtil;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
 
 /**
@@ -272,7 +273,7 @@ public class JvmDao {
      * 
      * @return total number of safepoint events.
      */
-    public synchronized int getTotalCount() {
+    public synchronized int getSafepointEventCount() {
         int count = 0;
         Statement statement = null;
         ResultSet rs = null;
@@ -303,51 +304,13 @@ public class JvmDao {
     }
 
     /**
-     * The total number of safepoint events.
-     * 
-     * @param eventType
-     *            the type of safepoint event.
-     * @return total number of safepoint events.
-     */
-    public synchronized int getSafepointCount(LogEventType eventType) {
-        int count = 0;
-        Statement statement = null;
-        ResultSet rs = null;
-        try {
-            statement = connection.createStatement();
-            rs = statement.executeQuery(
-                    "select count(id) from safepoint_event where event_name='" + eventType.toString() + "'");
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            throw new RuntimeException("Error determining RevokeBiasEvent count.");
-        } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                throw new RuntimeException("Error closing ResultSet.");
-            }
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                throw new RuntimeException("Error closing Statement.");
-            }
-        }
-        return count;
-    }
-
-    /**
      * The total safepoint time.
      * 
      * @param eventType
      *            the type of safepoint event.
      * @return total pause duration (milliseconds).
      */
-    public synchronized long getSafepointTime(LogEventType eventType) {
+    public synchronized long getSafepointEventTotalPause(LogEventType eventType) {
         long totalPause = 0;
         Statement statement = null;
         ResultSet rs = null;
@@ -364,6 +327,173 @@ public class JvmDao {
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             throw new RuntimeException("Error determining total RevokeBiasEvent time.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return totalPause;
+    }
+
+    /**
+     * Retrieve all <code>SafepointEvent</code>s.
+     * 
+     * @return <code>List</code> of events.
+     */
+    public synchronized List<SafepointEvent> getSafepointEvents() {
+        List<SafepointEvent> events = new ArrayList<SafepointEvent>();
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            StringBuffer sql = new StringBuffer();
+            sql.append("select time_stamp, event_name, sync, cleanup, vmop, log_entry from safepoint_event order by "
+                    + "time_stamp asc, id asc");
+            rs = statement.executeQuery(sql.toString());
+            while (rs.next()) {
+                LogEventType eventType = JdkUtil.determineEventType(rs.getString(2));
+                SafepointEvent event = JdkUtil.hydrateSafepointEvent(eventType, rs.getString(6), rs.getLong(1),
+                        rs.getInt(3), rs.getInt(4), rs.getInt(5));
+                events.add(event);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error retrieving safepoint events.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return events;
+    }
+
+    /**
+     * The first <code>SafepointEvent</code>.
+     * 
+     * @return The first <code>SafepointEvent</code>.
+     */
+    public synchronized SafepointEvent getFirstSafepointEvent() {
+        SafepointEvent event = null;
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery(
+                    "select log_entry from safepoint_event where id = " + "(select min(id) from safepoint_event)");
+            if (rs.next()) {
+                event = (SafepointEvent) JdkUtil.parseLogLine(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error determining first safepoint event.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return event;
+    }
+
+    /**
+     * Retrieve the last <code>SafepointEvent</code>.
+     * 
+     * @return The last <code>SafepointEvent</code>.
+     */
+    public synchronized SafepointEvent getLastSafepointEvent() {
+        SafepointEvent event = null;
+        // Retrieve last event from batch or database.
+        if (safepointBatch.size() > 0) {
+            event = safepointBatch.get(safepointBatch.size() - 1);
+        } else {
+            event = querySafepointLastEvent();
+        }
+        return event;
+    }
+
+    /**
+     * Retrieve the last <code>SafepointEvent</code>.
+     * 
+     * @return The last <code>SafepointEvent</code> in database.
+     */
+
+    private synchronized SafepointEvent querySafepointLastEvent() {
+        SafepointEvent event = null;
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery(
+                    "select log_entry from safepoint_event where id = " + "(select max(id) from safepoint_event)");
+            if (rs.next()) {
+                event = (SafepointEvent) JdkUtil.parseLogLine(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error determining last safepoint event.");
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing ResultSet.");
+            }
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                throw new RuntimeException("Error closing Statement.");
+            }
+        }
+        return event;
+    }
+
+    /**
+     * The total <code>SafepointEvent</code> pause time.
+     * 
+     * @return total pause duration (milliseconds).
+     */
+    public synchronized long getSafepointTotalPause() {
+        long totalPause = 0;
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery("select sum(sync), sum(cleanup), sum(vmop) from safepoint_event");
+            if (rs.next()) {
+                totalPause = rs.getLong(1);
+                totalPause = totalPause + rs.getLong(2);
+                totalPause = totalPause + rs.getLong(3);
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw new RuntimeException("Error determining total pause time.");
         } finally {
             try {
                 rs.close();

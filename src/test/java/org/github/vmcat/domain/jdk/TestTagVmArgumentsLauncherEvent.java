@@ -63,7 +63,7 @@ public class TestTagVmArgumentsLauncherEvent extends TestCase {
         File testFile = new File(Constants.TEST_DATA_DIR + "dataset7.txt");
         Manager manager = new Manager();
         manager.store(testFile);
-        JvmRun jvmRun = manager.getJvmRun(new Jvm());
+        JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " vent identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
         Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_ARGUMENTS_LAUNCHER.toString() + " not identified.",

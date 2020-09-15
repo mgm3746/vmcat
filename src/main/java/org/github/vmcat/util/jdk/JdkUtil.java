@@ -14,13 +14,19 @@
  *********************************************************************************************************************/
 package org.github.vmcat.util.jdk;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.github.vmcat.domain.BlankLineEvent;
 import org.github.vmcat.domain.LogEvent;
-import org.github.vmcat.domain.SafepointEvent;
+import org.github.vmcat.domain.TimeWarpException;
 import org.github.vmcat.domain.UnknownEvent;
-import org.github.vmcat.domain.jdk.DeoptimizeEvent;
 import org.github.vmcat.domain.jdk.HeaderEvent;
-import org.github.vmcat.domain.jdk.RevokeBiasEvent;
+import org.github.vmcat.domain.jdk.SafepointEvent;
 import org.github.vmcat.domain.jdk.TagBlobEvent;
 import org.github.vmcat.domain.jdk.TagBlobSectEvent;
 import org.github.vmcat.domain.jdk.TagDependencyFailedEvent;
@@ -37,6 +43,8 @@ import org.github.vmcat.domain.jdk.TagVmVersionNameEvent;
 import org.github.vmcat.domain.jdk.TagVmVersionReleaseEvent;
 import org.github.vmcat.domain.jdk.TagWriterEvent;
 import org.github.vmcat.domain.jdk.TagXmlEvent;
+import org.github.vmcat.util.Constants;
+import org.github.vmcat.util.VmUtil;
 
 /**
  * <p>
@@ -53,13 +61,20 @@ public class JdkUtil {
      */
     public enum LogEventType {
         //
-        BLANK_LINE, DEOPTIMIZE, HEADER, REVOKE_BIAS, TAG_BLOB, TAG_BLOB_SECT, TAG_DEPENDENCY_FAILED, TAG_HOTSPOT_LOG,
+        BLANK_LINE, HEADER, SAFEPOINT, TAG_BLOB, TAG_BLOB_SECT, TAG_DEPENDENCY_FAILED, TAG_HOTSPOT_LOG, TAG_TTY,
         //
-        TAG_TTY, TAG_VM_ARGUMENTS, TAG_VM_ARGUMENTS_ARGS, TAG_VM_ARGUMENTS_COMMAND, TAG_VM_ARGUMENTS_LAUNCHER,
+        TAG_VM_ARGUMENTS, TAG_VM_ARGUMENTS_ARGS, TAG_VM_ARGUMENTS_COMMAND, TAG_VM_ARGUMENTS_LAUNCHER,
         //
         TAG_VM_ARGUMENTS_PROPERTIES, TAG_VM_VERSION, TAG_VM_VERSION_INFO, TAG_VM_VERSION_NAME, TAG_VM_VERSION_RELEASE,
         //
         TAG_WRITER, TAG_XML, UNKNOWN
+    };
+
+    /**
+     * Defined triggers.
+     */
+    public enum TriggerType {
+        Deoptimize, RevokeBias
     };
 
     /**
@@ -77,14 +92,11 @@ public class JdkUtil {
         case BLANK_LINE:
             event = new BlankLineEvent(logLine);
             break;
-        case DEOPTIMIZE:
-            event = new DeoptimizeEvent(logLine);
-            break;
         case HEADER:
             event = new HeaderEvent(logLine);
             break;
-        case REVOKE_BIAS:
-            event = new RevokeBiasEvent(logLine);
+        case SAFEPOINT:
+            event = new SafepointEvent(logLine);
             break;
         case TAG_BLOB:
             event = new TagBlobEvent(logLine);
@@ -154,12 +166,10 @@ public class JdkUtil {
     public static final LogEventType identifyEventType(String logLine) {
         if (BlankLineEvent.match(logLine))
             return LogEventType.BLANK_LINE;
-        if (DeoptimizeEvent.match(logLine))
-            return LogEventType.DEOPTIMIZE;
         if (HeaderEvent.match(logLine))
             return LogEventType.HEADER;
-        if (RevokeBiasEvent.match(logLine))
-            return LogEventType.REVOKE_BIAS;
+        if (SafepointEvent.match(logLine))
+            return LogEventType.SAFEPOINT;
         if (TagBlobEvent.match(logLine))
             return LogEventType.TAG_BLOB;
         if (TagBlobSectEvent.match(logLine))
@@ -204,22 +214,19 @@ public class JdkUtil {
      *            Log entry <code>LogEventType</code>.
      * @param logEntry
      *            Log entry.
+     * @param timestamp
+     *            Log entry timestamp.
+     * @param timeSync
+     *            The time for all threads to reach safepoint (sync) in milliseconds.
+     * @param timeCleanup
+     *            The time for cleanup activities in milliseconds.
+     * @param timeVmop
+     *            The time for the safepoint activity (vmop) in milliseconds.
      * @return The <code>SafepointEvent</code> for the given event values.
      */
-    public static final SafepointEvent hydrateSafepointEvent(LogEventType eventType, String logEntry) {
-        SafepointEvent event = null;
-        switch (eventType) {
-        case DEOPTIMIZE:
-            event = new DeoptimizeEvent(logEntry);
-            break;
-        case REVOKE_BIAS:
-            event = new RevokeBiasEvent(logEntry);
-            break;
-
-        default:
-            throw new AssertionError("Unexpected event type value: " + eventType + ": " + logEntry);
-        }
-        return event;
+    public static final SafepointEvent hydrateSafepointEvent(LogEventType eventType, String logEntry, long timestamp,
+            int timeSync, int timeCleanup, int timeVmop) {
+        return new SafepointEvent(logEntry, timestamp, timeSync, timeCleanup, timeVmop);
     }
 
     /**
@@ -270,5 +277,74 @@ public class JdkUtil {
             }
         }
         return logEventType;
+    }
+
+    /**
+     * Determine if the <code>SafepointEvent</code> should be classified as a bottleneck.
+     * 
+     * @param event
+     *            Current <code>SafepointEvent</code>.
+     * @param event
+     *            Previous <code>SafepointEvent</code>.
+     * @param throughputThreshold
+     *            Throughput threshold (percent of time spent not is safepoint for a given time interval) to be
+     *            considered a bottleneck. Whole number 0-100.
+     * @return True if the <code>SafepointEvent</code> pause time meets the bottleneck definition.
+     */
+    public static final boolean isBottleneck(SafepointEvent safepointEvent, SafepointEvent event,
+            int throughputThreshold) throws TimeWarpException {
+
+        /*
+         * Current event should not start until prior even finishes. Allow 1 thousandth of a second overlap to account
+         * for precision and rounding limitations.
+         */
+        if (safepointEvent.getTimestamp() < (event.getTimestamp() + event.getDuration() - 1)) {
+            throw new TimeWarpException("Event overlap: " + Constants.LINE_SEPARATOR + event.getLogEntry()
+                    + Constants.LINE_SEPARATOR + safepointEvent.getLogEntry());
+        }
+
+        /*
+         * Timestamp is the start of a garbage collection event; therefore, the interval is from the end of the prior
+         * event to the end of the current event.
+         */
+        long interval = safepointEvent.getTimestamp() + safepointEvent.getDuration() - event.getTimestamp()
+                - event.getDuration();
+        if (interval < 0) {
+            throw new TimeWarpException("Negative interval: " + Constants.LINE_SEPARATOR + event.getLogEntry()
+                    + Constants.LINE_SEPARATOR + safepointEvent.getLogEntry());
+        }
+
+        // Determine the maximum duration for the given interval that meets the
+        // throughput goal.
+        BigDecimal durationThreshold = new BigDecimal(100 - throughputThreshold);
+        durationThreshold = durationThreshold.movePointLeft(2);
+        durationThreshold = durationThreshold.multiply(new BigDecimal(interval));
+        durationThreshold.setScale(0, RoundingMode.DOWN);
+        return (safepointEvent.getDuration() > durationThreshold.intValue());
+    }
+
+    /**
+     * Convert all log entry timestamps to a datestamp.
+     * 
+     * @param logEntry
+     *            The log entry.
+     * @param jvmStartDate
+     *            The date/time the JVM started.
+     * @return the log entry with the timestamp converted to a datestamp.
+     */
+    public static final String convertLogEntryTimestampsToDateStamp(String logEntry, Date jvmStartDate) {
+        // Add the colon or space after the timestamp format so durations will not get picked up.
+        Pattern pattern = Pattern.compile(JdkRegEx.TIMESTAMP + "(: )");
+        Matcher matcher = pattern.matcher(logEntry);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            Date date = VmUtil.getDatePlusTimestamp(jvmStartDate,
+                    JdkMath.convertSecsToMillis(matcher.group(1)).longValue());
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+            // Only update the timestamp, keep the colon or space.
+            matcher.appendReplacement(sb, formatter.format(date) + matcher.group(2));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }

@@ -14,6 +14,13 @@
  *********************************************************************************************************************/
 package org.github.vmcat.util.jdk;
 
+import java.io.File;
+
+import org.github.vmcat.domain.Jvm;
+import org.github.vmcat.domain.JvmRun;
+import org.github.vmcat.service.Manager;
+import org.github.vmcat.util.Constants;
+
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
@@ -32,4 +39,15 @@ public class TestAnalysis extends TestCase {
             Assert.assertNotNull(analysis[i].getKey() + " not found.", analysis[i].getValue());
         }
     }
+
+    public void testPartialLog() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset1.txt");
+        Manager manager = new Manager();
+        manager.store(testFile);
+        JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
+        Assert.assertTrue(Analysis.INFO_FIRST_TIMESTAMP_THRESHOLD_EXCEEDED + " analysis not identified.",
+                jvmRun.getAnalysis().contains(Analysis.INFO_FIRST_TIMESTAMP_THRESHOLD_EXCEEDED));
+
+    }
+
 }

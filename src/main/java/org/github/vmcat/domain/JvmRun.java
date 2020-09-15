@@ -14,9 +14,15 @@
  *********************************************************************************************************************/
 package org.github.vmcat.domain;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
+import org.github.vmcat.domain.jdk.SafepointEvent;
+import org.github.vmcat.util.Constants;
+import org.github.vmcat.util.VmUtil;
 import org.github.vmcat.util.jdk.Analysis;
+import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
 
 /**
@@ -33,29 +39,35 @@ public class JvmRun {
     private Jvm jvm;
 
     /**
+     * Minimum throughput (percent of time spent not in safepoint for a given time interval) to not be flagged a
+     * bottleneck.
+     */
+    private int throughputThreshold;
+
+    /**
      * Total number of SafepointEvent events.
      */
-    private long safepointCount;
+    private long safepointEventCount;
 
     /**
-     * Total number of RevokeBiasEvent events.
+     * Total SafePointEvent pause duration (microseconds).
      */
-    private long revokeBiasCount;
+    private long safepointTotalPause;
 
     /**
-     * Total RevokeBiasEvent time duration (milliseconds).
+     * The first <code>SafepointEvent</code>.
      */
-    private long revokeBiasTime;
+    private SafepointEvent firstSafepointEvent;
 
     /**
-     * Total number of Deoptimize events.
+     * The last <code>SafepointEvent</code>.
      */
-    private long deoptimizeCount;
+    private SafepointEvent lastSafepointEvent;
 
     /**
-     * Total Deoptimize time duration (milliseconds).
+     * <code>SafepointEvent</code>s where throughput does not meet the throughput goal.
      */
-    private long deoptimizeTime;
+    private List<String> bottlenecks;
 
     /**
      * Log lines that do not match any existing logging patterns.
@@ -106,52 +118,60 @@ public class JvmRun {
         this.analysis = analysis;
     }
 
-    public long getSafepointCount() {
-        return safepointCount;
-    }
-
-    public void setSafepointCount(long safepointCount) {
-        this.safepointCount = safepointCount;
-    }
-
-    public long getRevokeBiasCount() {
-        return revokeBiasCount;
-    }
-
-    public void setRevokeBiasCount(long revokeBiasCount) {
-        this.revokeBiasCount = revokeBiasCount;
-    }
-
-    public long getRevokeBiasTime() {
-        return revokeBiasTime;
-    }
-
-    public void setRevokeBiasTime(long revokeBiasTime) {
-        this.revokeBiasTime = revokeBiasTime;
-    }
-
-    public long getDeoptimizeCount() {
-        return deoptimizeCount;
-    }
-
-    public void setDeoptimizeCount(long deoptimizeCount) {
-        this.deoptimizeCount = deoptimizeCount;
-    }
-
-    public long getDeoptimizeTime() {
-        return deoptimizeTime;
-    }
-
-    public void setDeoptimizeTime(long deoptimizeTime) {
-        this.deoptimizeTime = deoptimizeTime;
-    }
-
     public List<LogEventType> getEventTypes() {
         return eventTypes;
     }
 
     public void setEventTypes(List<LogEventType> eventTypes) {
         this.eventTypes = eventTypes;
+    }
+
+    public List<String> getBottlenecks() {
+        return bottlenecks;
+    }
+
+    public void setBottlenecks(List<String> bottlenecks) {
+        this.bottlenecks = bottlenecks;
+    }
+
+    public int getThroughputThreshold() {
+        return throughputThreshold;
+    }
+
+    public void setThroughputThreshold(int throughputThreshold) {
+        this.throughputThreshold = throughputThreshold;
+    }
+
+    public long getSafepointEventCount() {
+        return safepointEventCount;
+    }
+
+    public void setSafepointEventCount(long safepointEventCount) {
+        this.safepointEventCount = safepointEventCount;
+    }
+
+    public long getSafepointTotalPause() {
+        return safepointTotalPause;
+    }
+
+    public void setSafepointTotalPause(long safepointTotalPause) {
+        this.safepointTotalPause = safepointTotalPause;
+    }
+
+    public SafepointEvent getFirstSafepointEvent() {
+        return firstSafepointEvent;
+    }
+
+    public void setFirstSafepointEvent(SafepointEvent firstSafepointEvent) {
+        this.firstSafepointEvent = firstSafepointEvent;
+    }
+
+    public SafepointEvent getLastSafepointEvent() {
+        return lastSafepointEvent;
+    }
+
+    public void setLastSafepointEvent(SafepointEvent lastSafepointEvent) {
+        this.lastSafepointEvent = lastSafepointEvent;
     }
 
     /**
@@ -172,7 +192,10 @@ public class JvmRun {
      * Do data analysis.
      */
     private void doDataAnalysis() {
-        // TODO:
+        // Check for partial log
+        if (this.firstSafepointEvent != null && VmUtil.isPartialLog(firstSafepointEvent.getTimestamp())) {
+            analysis.add(Analysis.INFO_FIRST_TIMESTAMP_THRESHOLD_EXCEEDED);
+        }
     }
 
     /**
@@ -190,6 +213,71 @@ public class JvmRun {
     private void doJvmOptionsAnalysis() {
 
         // TODO:
+    }
+
+    /**
+     * @return Throughput based only on garbage collection as a percent rounded to the nearest integer. CG throughput is
+     *         the percent of time not spent doing GC. 0 means all time was spent doing GC. 100 means no time was spent
+     *         doing GC.
+     */
+    public long gethroughput() {
+        long gcThroughput;
+        if (safepointEventCount > 0) {
+            long timeNotGc = getJvmRunDuration() - new Long(safepointTotalPause).longValue();
+            BigDecimal throughput = new BigDecimal(timeNotGc);
+            throughput = throughput.divide(new BigDecimal(getJvmRunDuration()), 2, RoundingMode.HALF_EVEN);
+            throughput = throughput.movePointRight(2);
+            gcThroughput = throughput.longValue();
+
+        } else {
+            gcThroughput = 100L;
+        }
+        return gcThroughput;
+    }
+
+    /**
+     * @return JVM run duration (milliseconds).
+     */
+    public long getJvmRunDuration() {
+
+        long start = 0;
+        if (getFirstSafepointEvent() != null
+                && getFirstSafepointEvent().getTimestamp() > Constants.FIRST_TIMESTAMP_THRESHOLD * 1000) {
+            // partial log
+            start = getFirstSafepointEvent().getTimestamp();
+        }
+
+        long end = 0;
+        // Use either last gc or last timestamp and add duration of gc/stop
+        long lastSafepointEventTimeStamp = 0;
+        long lastSafepointEventDuration = 0;
+        if (lastSafepointEvent != null) {
+            lastSafepointEventTimeStamp = lastSafepointEvent.getTimestamp();
+            lastSafepointEventDuration = lastSafepointEvent.getDuration();
+        }
+        end = lastSafepointEventTimeStamp + JdkMath.convertMicrosToMillis(lastSafepointEventDuration).longValue();
+
+        return end - start;
+    }
+
+    /**
+     * @return Throughput based on <code>SafepointEvent</code>s as a percent rounded to the nearest integer. Throughput
+     *         is the percent of time not in safepoint. 0 means all time was spent in safepoint. 100 means no time was
+     *         spent in safepoint.
+     */
+    public long getThroughput() {
+        long gcThroughput;
+        if (safepointEventCount > 0) {
+            long timeNotGc = getJvmRunDuration() - new Long(safepointTotalPause).longValue();
+            BigDecimal throughput = new BigDecimal(timeNotGc);
+            throughput = throughput.divide(new BigDecimal(getJvmRunDuration()), 2, RoundingMode.HALF_EVEN);
+            throughput = throughput.movePointRight(2);
+            gcThroughput = throughput.longValue();
+
+        } else {
+            gcThroughput = 100L;
+        }
+        return gcThroughput;
     }
 
 }

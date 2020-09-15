@@ -23,35 +23,42 @@ import junit.framework.TestCase;
 /**
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  */
-public class TestRevokeBiasEvent extends TestCase {
+public class TestSafepointEvent extends TestCase {
 
     public void testParseLogLine() {
         String logLine = "1665.730: RevokeBias                       [    2409          2             74    ]      "
                 + "[     3     2    10    30     0    ]  1";
-        Assert.assertTrue(JdkUtil.LogEventType.REVOKE_BIAS.toString() + " not parsed.",
-                JdkUtil.parseLogLine(logLine) instanceof RevokeBiasEvent);
+        Assert.assertTrue(JdkUtil.TriggerType.RevokeBias.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof SafepointEvent);
     }
 
     public void testHydration() {
-        LogEventType eventType = JdkUtil.LogEventType.REVOKE_BIAS;
+        LogEventType eventType = JdkUtil.LogEventType.SAFEPOINT;
         String logLine = "1665.730: RevokeBias                       [    2409          2             74    ]      "
                 + "[     3     2    10    30     0    ]  1";
-        Assert.assertTrue(JdkUtil.LogEventType.REVOKE_BIAS.toString() + " not parsed.",
-                JdkUtil.hydrateSafepointEvent(eventType, logLine) instanceof RevokeBiasEvent);
+        long timestamp = 1665730;
+        int timeSync = 10;
+        int timeClean = 30;
+        int timeVmop = 0;
+        Assert.assertTrue(JdkUtil.LogEventType.SAFEPOINT.toString() + " not parsed.",
+                JdkUtil.hydrateSafepointEvent(eventType, logLine, timestamp, timeSync, timeClean,
+                        timeVmop) instanceof SafepointEvent);
     }
 
     public void testReportable() {
-        Assert.assertTrue(JdkUtil.LogEventType.REVOKE_BIAS.toString() + " not indentified as reportable.",
-                JdkUtil.isReportable(JdkUtil.LogEventType.REVOKE_BIAS));
+        Assert.assertTrue(JdkUtil.LogEventType.SAFEPOINT.toString() + " not indentified as reportable.",
+                JdkUtil.isReportable(JdkUtil.LogEventType.SAFEPOINT));
     }
 
-    public void testLogLine() {
+    public void testLogLineTriggerRevokeBias() {
         String logLine = "1665.730: RevokeBias                       [    2409          2             74    ]      "
                 + "[     3     2    10    30     0    ]  1";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
-        RevokeBiasEvent event = new RevokeBiasEvent(logLine);
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.SAFEPOINT.toString() + ".",
+                SafepointEvent.match(logLine));
+        SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 1665730, event.getTimestamp());
+        Assert.assertEquals("Trigger not parsed correctly.", JdkUtil.TriggerType.RevokeBias.toString(),
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2409,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 2,
@@ -66,61 +73,39 @@ public class TestRevokeBiasEvent extends TestCase {
         Assert.assertEquals("Time for cleanup activities not parsed correctly.", 30, event.getTimeCleanup());
         Assert.assertEquals("Time for safepoint activity (vmop) not parsed correctly.", 0, event.getTimeVmop());
         Assert.assertEquals("Page trap count not parsed correctly.", 1, event.getPageTrapCount());
+        Assert.assertEquals("Duration not calculated correctly.", 40, event.getDuration());
     }
 
     public void testLogLineWhiteSpaceAtEnd() {
         String logLine = "1665.730: RevokeBias                       [    2409          2             74    ]      "
                 + "[     3     2    10    30     0    ]  1     ";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.SAFEPOINT.toString() + ".",
+                SafepointEvent.match(logLine));
     }
 
-    public void testLogLineAlternateSpaces() {
-        String logLine = "9.406: RevokeBias                       [      22          0              1    ]      "
-                + "[     0     0     0     0     0    ]  0";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
-    }
-
-    public void testLogLineAlternateSpaces2() {
-        String logLine = "13.738: RevokeBias                       [      25          0              3    ]      "
-                + "[     0    12    12     0     7    ]  0";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
-    }
-
-    public void testLogLineAlternateSpaces3() {
-        String logLine = "1617.723: RevokeBias                       [    2450          6            117    ]      "
-                + "[     8    11    21    36     0    ]  6";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
-    }
-
-    public void testLogLineAlternateSpaces4() {
-        String logLine = "1620.674: RevokeBias                       [    2461          4            151    ]      "
-                + "[    16     4    22    31     0    ]  3";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
-    }
-
-    public void testLogLineAlternateSpaces5() {
-        String logLine = "54.980: RevokeBias                       [     120          2              8    ]      "
-                + "[     0     3     3     1    10    ]  0";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
-    }
-
-    public void testLogLineAlternateSpaces6() {
-        String logLine = "148.815: RevokeBias                       [     261         12             18    ]      "
-                + "[     0     1     1     2     0    ]  8";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
-    }
-
-    public void testLogLineAlternateSpaces7() {
-        String logLine = "251.278: RevokeBias                       [    2268          0             12    ]      "
-                + "[     0    12    13    17   111    ]  0";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.REVOKE_BIAS.toString() + ".",
-                RevokeBiasEvent.match(logLine));
+    public void testLogLineTriggerDeoptimize() {
+        String logLine = "1127.742: Deoptimize                       [    2531          0             38    ]      "
+                + "[     0     5     7    30    34    ]  0";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.SAFEPOINT.toString() + ".",
+                SafepointEvent.match(logLine));
+        SafepointEvent event = new SafepointEvent(logLine);
+        Assert.assertEquals("Time stamp not parsed correctly.", 1127742, event.getTimestamp());
+        Assert.assertEquals("Trigger not parsed correctly.", JdkUtil.TriggerType.Deoptimize.toString(),
+                event.getTrigger());
+        Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2531,
+                event.getThreadsTotal());
+        Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
+                event.getThreadsSpinning());
+        Assert.assertEquals("Number of threads that were blocked before safepoint not parsed correctly.", 38,
+                event.getThreadsBlocked());
+        Assert.assertEquals("Time for spinning threads to reach safepoint.", 0, event.getTimeSpin());
+        Assert.assertEquals("Time for blocked threads to reach safepoint not parsed correctly.", 5,
+                event.getTimeBlock());
+        Assert.assertEquals("Time for all threads to reach safepoint (sync) not parsed correctly.", 7,
+                event.getTimeSync());
+        Assert.assertEquals("Time for cleanup activities not parsed correctly.", 30, event.getTimeCleanup());
+        Assert.assertEquals("Time for safepoint activity (vmop) not parsed correctly.", 34, event.getTimeVmop());
+        Assert.assertEquals("Page trap count not parsed correctly.", 0, event.getPageTrapCount());
+        Assert.assertEquals("Duration not calculated correctly.", 71, event.getDuration());
     }
 }

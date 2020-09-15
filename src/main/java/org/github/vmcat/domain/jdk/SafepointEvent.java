@@ -17,14 +17,14 @@ package org.github.vmcat.domain.jdk;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.github.vmcat.domain.SafepointEvent;
+import org.github.vmcat.domain.LogEvent;
 import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * REVOKE_BIAS
+ * SAFEPOINT
  * </p>
  * 
  * <p>
@@ -50,13 +50,13 @@ import org.github.vmcat.util.jdk.JdkUtil;
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  */
-public class RevokeBiasEvent implements SafepointEvent {
+public class SafepointEvent implements LogEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " RevokeBias[ ]{23}" + JdkRegEx.THREAD_BLOCK
-            + "[ ]{6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2}" + JdkRegEx.NUMBER + "[ ]*$";
+    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " (Deoptimize|RevokeBias)[ ]{23}"
+            + JdkRegEx.THREAD_BLOCK + "[ ]{6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2}" + JdkRegEx.NUMBER + "[ ]*$";
 
     private static Pattern pattern = Pattern.compile(REGEX);
 
@@ -116,31 +116,59 @@ public class RevokeBiasEvent implements SafepointEvent {
     int pageTrapCount;
 
     /**
+     * The trigger for the safepoint event.
+     */
+    private String trigger;
+
+    /**
      * Create event from log entry.
      * 
      * @param logEntry
      *            The log entry for the event.
      */
-    public RevokeBiasEvent(String logEntry) {
+    public SafepointEvent(String logEntry) {
         this.logEntry = logEntry;
         Matcher matcher = pattern.matcher(logEntry);
         if (matcher.find()) {
             timestamp = JdkMath.convertSecsToMillis(matcher.group(12)).longValue();
-            threadsTotal = Integer.parseInt(matcher.group(13));
-            threadsSpinning = Integer.parseInt(matcher.group(14));
-            threadsBlocked = Integer.parseInt(matcher.group(15));
-            timeSpin = Integer.parseInt(matcher.group(16));
-            timeBlock = Integer.parseInt(matcher.group(17));
-            timeSync = Integer.parseInt(matcher.group(18));
-            timeCleanup = Integer.parseInt(matcher.group(19));
-            timeVmop = Integer.parseInt(matcher.group(20));
-            pageTrapCount = Integer.parseInt(matcher.group(21));
+            trigger = matcher.group(13);
+            threadsTotal = Integer.parseInt(matcher.group(14));
+            threadsSpinning = Integer.parseInt(matcher.group(15));
+            threadsBlocked = Integer.parseInt(matcher.group(16));
+            timeSpin = Integer.parseInt(matcher.group(17));
+            timeBlock = Integer.parseInt(matcher.group(18));
+            timeSync = Integer.parseInt(matcher.group(19));
+            timeCleanup = Integer.parseInt(matcher.group(20));
+            timeVmop = Integer.parseInt(matcher.group(21));
+            pageTrapCount = Integer.parseInt(matcher.group(22));
         }
 
     }
 
+    /**
+     * Alternate constructor. Create <code>RevokeBiasEvent</code> from values.
+     * 
+     * @param logEntry
+     *            The log entry for the event.
+     * @param timestamp
+     *            The time when the event started in milliseconds after JVM startup.
+     * @param timeSync
+     *            The time for all threads to reach safepoint (sync) in milliseconds.
+     * @param timeCleanup
+     *            The time for cleanup activities in milliseconds.
+     * @param timeVmop
+     *            The time for the safepoint activity (vmop) in milliseconds.
+     */
+    public SafepointEvent(String logEntry, long timestamp, int timeSync, int timeCleanup, int timeVmop) {
+        this.logEntry = logEntry;
+        this.timestamp = timestamp;
+        this.timeSync = timeSync;
+        this.timeCleanup = timeCleanup;
+        this.timeVmop = timeVmop;
+    }
+
     public String getName() {
-        return JdkUtil.LogEventType.REVOKE_BIAS.toString();
+        return JdkUtil.LogEventType.SAFEPOINT.toString();
     }
 
     public String getLogEntry() {
@@ -240,6 +268,14 @@ public class RevokeBiasEvent implements SafepointEvent {
 
     public void setPageTrapCount(int pageTrapCount) {
         this.pageTrapCount = pageTrapCount;
+    }
+
+    public int getDuration() {
+        return timeSync + timeCleanup + timeVmop;
+    }
+
+    public String getTrigger() {
+        return trigger;
     }
 
 }

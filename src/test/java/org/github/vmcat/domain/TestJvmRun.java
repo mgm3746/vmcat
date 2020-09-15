@@ -34,11 +34,22 @@ public class TestJvmRun extends TestCase {
         File testFile = new File(Constants.TEST_DATA_DIR + "dataset1.txt");
         Manager manager = new Manager();
         manager.store(testFile);
-        JvmRun jvmRun = manager.getJvmRun(new Jvm());
+        JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " event identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
+        Assert.assertTrue(JdkUtil.LogEventType.SAFEPOINT.toString() + " event not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.SAFEPOINT));
+        Assert.assertTrue(JdkUtil.LogEventType.HEADER.toString() + " event not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.HEADER));
+        Assert.assertEquals("Safepoint event count not correct.", 9, jvmRun.getSafepointEventCount());
         Assert.assertEquals("Event type count not correct.", 2, jvmRun.getEventTypes().size());
-        Assert.assertEquals("RevokeBiasEvent count not correct.", 9, jvmRun.getRevokeBiasCount());
-        Assert.assertEquals("RevokeBiasEvent time not correct.", 440, jvmRun.getRevokeBiasTime());
+        Assert.assertEquals("Safepoint first timestamp not correct.", 1617723,
+                jvmRun.getFirstSafepointEvent().getTimestamp());
+        Assert.assertEquals("Safepoint last timestamp not correct.", 1620756,
+                jvmRun.getLastSafepointEvent().getTimestamp());
+        Assert.assertEquals("Safepoint total pause not correct.", 440, jvmRun.getSafepointTotalPause());
+        Assert.assertEquals("Safepoint last duration not correct.", 33, jvmRun.getLastSafepointEvent().getDuration());
+        Assert.assertEquals("JVM run duration not correct.", 3033, jvmRun.getJvmRunDuration());
+        Assert.assertEquals("Throughput not correct.", 85, jvmRun.getThroughput());
     }
 }

@@ -15,58 +15,18 @@
 package org.github.vmcat.domain;
 
 /**
- * <p>
- * Base safepoint event (all threads stopped).
- * </p>
+ * Exception when the {@link org.github.vmcat.domain.SafepointEventx} chronology is not possible. For example, a
+ * {@link org.github.SafepointEventx.vmcat.SafepointEvent} that starts before a previous
+ * {@link org.github.SafepointEventx.vmcat.SafepointEvent} finishes.
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public interface SafepointEvent extends LogEvent {
+@SuppressWarnings("serial")
+public class TimeWarpException extends RuntimeException {
 
-    /**
-     * @return The total number of threads stopped in safepoint.
-     */
-    int getThreadsTotal();
-
-    /**
-     * @return The number of threads that were spinning before safepoint.
-     */
-    int getThreadsSpinning();
-
-    /**
-     * @return The number of threads that were blocked before safepoint.
-     */
-    int getThreadsBlocked();
-
-    /**
-     * @return The time it took spinning threads to reach safepoint in milliseconds.
-     */
-    int getTimeSpin();
-
-    /**
-     * @return The time it took blocked threads to reach safepoint in milliseconds.
-     */
-    int getTimeBlock();
-
-    /**
-     * @return The time it took all threads to reach safepoint in milliseconds.
-     */
-    int getTimeSync();
-
-    /**
-     * @return The time it took for cleanup activities in milliseconds.
-     */
-    int getTimeCleanup();
-
-    /**
-     * @return The time it took for the safepoint activity in milliseconds.
-     */
-    int getTimeVmop();
-
-    /**
-     * @return The page trap count.
-     */
-    int getPageTrapCount();
+    public TimeWarpException(String string) {
+        super(string);
+    }
 
 }

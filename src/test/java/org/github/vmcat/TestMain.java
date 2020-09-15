@@ -35,14 +35,18 @@ public class TestMain extends TestCase {
             // Make private method accessible
             parseOptions.setAccessible(true);
             // Method arguments
-            String[] args = new String[6];
+            String[] args = new String[10];
             args[0] = "-h";
             args[1] = "-o";
             args[2] = "12345678.txt";
             args[3] = "-v";
             args[4] = "-l";
+            args[5] = "-s";
+            args[6] = "2009-09-18 00:00:08,172";
+            args[7] = "-t";
+            args[8] = "80";
             // Instead of a file, use a location sure to exist.
-            args[5] = System.getProperty("user.dir");
+            args[9] = System.getProperty("user.dir");
             // Pass null object since parseOptions is static
             Object o = parseOptions.invoke(null, (Object) args);
             CommandLine cmd = (CommandLine) o;
@@ -55,6 +59,10 @@ public class TestMain extends TestCase {
                     cmd.hasOption(Constants.OPTION_VERSION_SHORT));
             Assert.assertTrue("'-" + Constants.OPTION_LATEST_VERSION_SHORT + "' is a valid option",
                     cmd.hasOption(Constants.OPTION_LATEST_VERSION_SHORT));
+            Assert.assertTrue("'-" + Constants.OPTION_STARTDATETIME_SHORT + "' is a valid option",
+                    cmd.hasOption(Constants.OPTION_STARTDATETIME_SHORT));
+            Assert.assertTrue("'-" + Constants.OPTION_THRESHOLD_SHORT + "' is a valid option",
+                    cmd.hasOption(Constants.OPTION_THRESHOLD_SHORT));
         } catch (ClassNotFoundException e) {
             Assert.fail(e.getMessage());
         } catch (SecurityException e) {
@@ -79,14 +87,18 @@ public class TestMain extends TestCase {
             // Make private method accessible
             parseOptions.setAccessible(true);
             // Method arguments
-            String[] args = new String[6];
+            String[] args = new String[10];
             args[0] = "--help";
             args[1] = "--output";
             args[2] = "12345678.txt";
             args[3] = "--version";
             args[4] = "--latest";
+            args[5] = "--startdatetime";
+            args[6] = "2009-09-18 00:00:08,172";
+            args[7] = "--threshold";
+            args[8] = "80";
             // Instead of a file, use a location sure to exist.
-            args[5] = System.getProperty("user.dir");
+            args[9] = System.getProperty("user.dir");
             // Pass null object since parseOptions is static
             Object o = parseOptions.invoke(null, (Object) args);
             CommandLine cmd = (CommandLine) o;
@@ -99,6 +111,10 @@ public class TestMain extends TestCase {
                     cmd.hasOption(Constants.OPTION_VERSION_LONG));
             Assert.assertTrue("'-" + Constants.OPTION_LATEST_VERSION_LONG + "' is a valid option",
                     cmd.hasOption(Constants.OPTION_LATEST_VERSION_LONG));
+            Assert.assertTrue("'-" + Constants.OPTION_STARTDATETIME_LONG + "' is a valid option",
+                    cmd.hasOption(Constants.OPTION_STARTDATETIME_LONG));
+            Assert.assertTrue("'-" + Constants.OPTION_THRESHOLD_LONG + "' is a valid option",
+                    cmd.hasOption(Constants.OPTION_THRESHOLD_LONG));
         } catch (ClassNotFoundException e) {
             Assert.fail(e.getMessage());
         } catch (SecurityException e) {
@@ -209,6 +225,70 @@ public class TestMain extends TestCase {
             Assert.fail("IllegalAccessException: " + e.getMessage());
         } catch (InvocationTargetException e) {
             Assert.fail("InvocationTargetException: " + e.getMessage());
+        }
+    }
+
+    public void testInvalidThresholdShortOption() {
+        try {
+            Class<?> c = Class.forName("org.github.vmcat.Main");
+            Class<?>[] argTypes = new Class[] { String[].class };
+            Method parseOptions = c.getDeclaredMethod("parseOptions", argTypes);
+            // Make private method accessible
+            parseOptions.setAccessible(true);
+            // Method arguments
+            String[] args = new String[3];
+            args[0] = "-t";
+            args[1] = "xxx";
+            // Instead of a file, use a location sure to exist.
+            args[2] = System.getProperty("user.dir");
+            // Pass null object since parseOptions is static
+            parseOptions.invoke(null, (Object) args);
+            Assert.fail("Should have raised an InvocationTargetException with an underlying PareseException");
+        } catch (ClassNotFoundException e) {
+            Assert.fail(e.getMessage());
+        } catch (SecurityException e) {
+            Assert.fail("SecurityException: " + e.getMessage());
+        } catch (NoSuchMethodException e) {
+            Assert.fail("NoSuchMethodException: " + e.getMessage());
+        } catch (IllegalArgumentException expected) {
+            Assert.assertNotNull(expected.getMessage());
+        } catch (IllegalAccessException e) {
+            Assert.fail("IllegalAccessException: " + e.getMessage());
+        } catch (InvocationTargetException e) {
+            // Anything the invoked method throws is wrapped by InvocationTargetException.
+            Assert.assertTrue("Epected ParseException not thrown.", e.getTargetException() instanceof ParseException);
+        }
+    }
+
+    public void testInvalidThresholdLongOption() {
+        try {
+            Class<?> c = Class.forName("org.github.vmcat.Main");
+            Class<?>[] argTypes = new Class[] { String[].class };
+            Method parseOptions = c.getDeclaredMethod("parseOptions", argTypes);
+            // Make private method accessible
+            parseOptions.setAccessible(true);
+            // Method arguments
+            String[] args = new String[3];
+            args[0] = "--threshold";
+            args[1] = "xxx";
+            // Instead of a file, use a location sure to exist.
+            args[2] = System.getProperty("user.dir");
+            // Pass null object since parseOptions is static
+            parseOptions.invoke(null, (Object) args);
+            Assert.fail("Should have raised an InvocationTargetException with an underlying IllegalArgumentException");
+        } catch (ClassNotFoundException e) {
+            Assert.fail(e.getMessage());
+        } catch (SecurityException e) {
+            Assert.fail("SecurityException: " + e.getMessage());
+        } catch (NoSuchMethodException e) {
+            Assert.fail("NoSuchMethodException: " + e.getMessage());
+        } catch (IllegalArgumentException expected) {
+            Assert.assertNotNull(expected.getMessage());
+        } catch (IllegalAccessException e) {
+            Assert.fail("IllegalAccessException: " + e.getMessage());
+        } catch (InvocationTargetException e) {
+            // Anything the invoked method throws is wrapped by InvocationTargetException.
+            Assert.assertTrue("Epected ParseException not thrown.", e.getTargetException() instanceof ParseException);
         }
     }
 }

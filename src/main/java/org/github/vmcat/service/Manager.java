@@ -19,15 +19,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.github.vmcat.Main;
 import org.github.vmcat.domain.Jvm;
 import org.github.vmcat.domain.JvmRun;
 import org.github.vmcat.domain.LogEvent;
-import org.github.vmcat.domain.SafepointEvent;
 import org.github.vmcat.domain.TagEvent;
 import org.github.vmcat.domain.UnknownEvent;
+import org.github.vmcat.domain.jdk.SafepointEvent;
 import org.github.vmcat.domain.jdk.TagVmArgumentsArgsEvent;
 import org.github.vmcat.domain.jdk.TagVmArgumentsCommandEvent;
 import org.github.vmcat.domain.jdk.TagVmArgumentsLauncherEvent;
@@ -111,6 +113,7 @@ public class Manager {
                         jvmDao.getUnidentifiedLogLines().add(logLine);
                     }
                 }
+
                 // Populate events list.
                 List<JdkUtil.LogEventType> eventTypes = jvmDao.getEventTypes();
                 JdkUtil.LogEventType eventType = JdkUtil.determineEventType(event.getName());
@@ -144,24 +147,89 @@ public class Manager {
     }
 
     /**
+     * Determine <code>SafepointEvent</code>s where throughput since last event does not meet the throughput goal.
+     * 
+     * @param jvm
+     *            The JVM environment information.
+     * @param throughputThreshold
+     *            The bottleneck reporting throughput threshold.
+     * @return A <code>List</code> of <code>SafepointEvent</code>s where the throughput between events is less than the
+     *         throughput threshold goal.
+     */
+    private List<String> getBottlenecks(Jvm jvm, int throughputThreshold) {
+        ArrayList<String> bottlenecks = new ArrayList<String>();
+        List<SafepointEvent> safepointEvents = jvmDao.getSafepointEvents();
+        Iterator<SafepointEvent> iterator = safepointEvents.iterator();
+        SafepointEvent priorEvent = null;
+        while (iterator.hasNext()) {
+            SafepointEvent event = iterator.next();
+            if (priorEvent != null && JdkUtil.isBottleneck(event, priorEvent, throughputThreshold)) {
+                if (bottlenecks.size() == 0) {
+                    // Add current and prior event
+                    if (jvm.getStartDate() != null) {
+                        // Convert timestamps to date/time
+                        bottlenecks.add(JdkUtil.convertLogEntryTimestampsToDateStamp(priorEvent.getLogEntry(),
+                                jvm.getStartDate()));
+                        bottlenecks.add(
+                                JdkUtil.convertLogEntryTimestampsToDateStamp(event.getLogEntry(), jvm.getStartDate()));
+                    } else {
+                        bottlenecks.add(priorEvent.getLogEntry());
+                        bottlenecks.add(event.getLogEntry());
+                    }
+                } else {
+                    if (jvm.getStartDate() != null) {
+                        // Compare datetime, since bottleneck has datetime
+                        if (!JdkUtil.convertLogEntryTimestampsToDateStamp(priorEvent.getLogEntry(), jvm.getStartDate())
+                                .equals(bottlenecks.get(bottlenecks.size() - 1))) {
+                            bottlenecks.add("...");
+                            bottlenecks.add(JdkUtil.convertLogEntryTimestampsToDateStamp(priorEvent.getLogEntry(),
+                                    jvm.getStartDate()));
+                            bottlenecks.add(JdkUtil.convertLogEntryTimestampsToDateStamp(event.getLogEntry(),
+                                    jvm.getStartDate()));
+                        } else {
+                            bottlenecks.add(JdkUtil.convertLogEntryTimestampsToDateStamp(event.getLogEntry(),
+                                    jvm.getStartDate()));
+                        }
+                    } else {
+                        // Compare timestamps, since bottleneck has timestamp
+                        if (!priorEvent.getLogEntry().equals(bottlenecks.get(bottlenecks.size() - 1))) {
+                            bottlenecks.add("...");
+                            bottlenecks.add(priorEvent.getLogEntry());
+                            bottlenecks.add(event.getLogEntry());
+                        } else {
+                            bottlenecks.add(event.getLogEntry());
+                        }
+                    }
+                }
+            }
+            priorEvent = event;
+        }
+        return bottlenecks;
+    }
+
+    /**
      * Get JVM run data.
      * 
      * @param jvm
      *            JVM environment information.
+     * @param throughputThreshold
+     *            The throughput threshold for bottleneck reporting.
      * @return The JVM run data.
      */
-    public JvmRun getJvmRun(Jvm jvm) {
+    public JvmRun getJvmRun(Jvm jvm, int throughputThreshold) {
         JvmRun jvmRun = new JvmRun(jvm);
-        jvmRun.setSafepointCount(jvmDao.getTotalCount());
-        jvmRun.setRevokeBiasCount(jvmDao.getSafepointCount(JdkUtil.LogEventType.REVOKE_BIAS));
-        jvmRun.setRevokeBiasTime(jvmDao.getSafepointTime(JdkUtil.LogEventType.REVOKE_BIAS));
-        jvmRun.setDeoptimizeCount(jvmDao.getSafepointCount(JdkUtil.LogEventType.DEOPTIMIZE));
-        jvmRun.setDeoptimizeTime(jvmDao.getSafepointTime(JdkUtil.LogEventType.DEOPTIMIZE));
-        jvmRun.setUnidentifiedLogLines(jvmDao.getUnidentifiedLogLines());
+        jvmRun.setThroughputThreshold(throughputThreshold);
         jvmRun.setAnalysis(jvmDao.getAnalysis());
+        jvmRun.setBottlenecks(getBottlenecks(jvm, throughputThreshold));
         jvmRun.setEventTypes(jvmDao.getEventTypes());
+        jvmRun.setFirstSafepointEvent(jvmDao.getFirstSafepointEvent());
+        jvmRun.setLastSafepointEvent(jvmDao.getLastSafepointEvent());
+        jvmRun.setSafepointEventCount(jvmDao.getSafepointEventCount());
+        jvmRun.setSafepointTotalPause(jvmDao.getSafepointTotalPause());
+        jvmRun.setUnidentifiedLogLines(jvmDao.getUnidentifiedLogLines());
         jvmRun.getJvm().setVersion(jvmDao.getVersion());
         jvmRun.getJvm().setOptions(jvmDao.getOptions());
+
         jvmRun.doAnalysis();
         return jvmRun;
     }

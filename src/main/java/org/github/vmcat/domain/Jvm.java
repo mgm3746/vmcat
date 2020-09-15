@@ -14,6 +14,8 @@
  *********************************************************************************************************************/
 package org.github.vmcat.domain;
 
+import java.util.Date;
+
 /**
  * JVM environment information
  * 
@@ -21,6 +23,11 @@ package org.github.vmcat.domain;
  * 
  */
 public class Jvm {
+
+    /**
+     * The date and time the JVM was started.
+     */
+    private Date startDate;
 
     /**
      * The JVM options for the JVM run.
@@ -31,6 +38,16 @@ public class Jvm {
      * JVM version.
      */
     private String version;
+
+    /**
+     * Constructor accepting list of JVM options.
+     * 
+     * @param jvmStartDate
+     *            The date and time the JVM was started.
+     */
+    public Jvm(Date jvmStartDate) {
+        this.startDate = jvmStartDate;
+    }
 
     /**
      * @return The JVM options.
@@ -55,4 +72,11 @@ public class Jvm {
         this.version = version;
     }
 
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
 }

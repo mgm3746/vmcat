@@ -19,11 +19,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -43,8 +45,8 @@ import org.github.vmcat.domain.Jvm;
 import org.github.vmcat.domain.JvmRun;
 import org.github.vmcat.service.Manager;
 import org.github.vmcat.util.Constants;
+import org.github.vmcat.util.VmUtil;
 import org.github.vmcat.util.jdk.Analysis;
-import org.github.vmcat.util.jdk.JdkMath;
 import org.json.JSONObject;
 
 /**
@@ -74,6 +76,10 @@ public class Main {
                 "latest version");
         options.addOption(Constants.OPTION_OUTPUT_SHORT, Constants.OPTION_OUTPUT_LONG, true,
                 "output file name (default " + Constants.OUTPUT_FILE_NAME + ")");
+        options.addOption(Constants.OPTION_STARTDATETIME_SHORT, Constants.OPTION_STARTDATETIME_LONG, true,
+                "JVM start datetime (yyyy-MM-dd HH:mm:ss,SSS) required for handling datestamp-only logging");
+        options.addOption(Constants.OPTION_THRESHOLD_SHORT, Constants.OPTION_THRESHOLD_LONG, true,
+                "threshold (0-100) for throughput bottleneck reporting");
     }
 
     /**
@@ -97,6 +103,12 @@ public class Main {
                 usage(options);
             } else {
 
+                // Determine JVM environment information.
+                Date jvmStartDate = null;
+                if (cmd.hasOption(Constants.OPTION_STARTDATETIME_LONG)) {
+                    jvmStartDate = VmUtil.parseStartDateTime(cmd.getOptionValue(Constants.OPTION_STARTDATETIME_SHORT));
+                }
+
                 String logFileName = (String) cmd.getArgList().get(cmd.getArgList().size() - 1);
                 File logFile = new File(logFileName);
 
@@ -106,8 +118,13 @@ public class Main {
                 manager.store(logFile);
 
                 // Create report
-                Jvm jvm = new Jvm();
-                JvmRun jvmRun = manager.getJvmRun(jvm);
+                Jvm jvm = new Jvm(jvmStartDate);
+                // Determine report options
+                int throughputThreshold = Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD;
+                if (cmd.hasOption(Constants.OPTION_THRESHOLD_LONG)) {
+                    throughputThreshold = Integer.parseInt(cmd.getOptionValue(Constants.OPTION_THRESHOLD_SHORT));
+                }
+                JvmRun jvmRun = manager.getJvmRun(jvm, throughputThreshold);
                 String outputFileName;
                 if (cmd.hasOption(Constants.OPTION_OUTPUT_LONG)) {
                     outputFileName = cmd.getOptionValue(Constants.OPTION_OUTPUT_SHORT);
@@ -194,6 +211,16 @@ public class Main {
         if (!logFile.exists()) {
             throw new ParseException("Invalid log file: '" + logFileName + "'");
         }
+        // threshold
+        if (cmd.hasOption(Constants.OPTION_THRESHOLD_LONG)) {
+            String thresholdRegEx = "^\\d{1,3}$";
+            String thresholdOptionValue = cmd.getOptionValue(Constants.OPTION_THRESHOLD_SHORT);
+            Pattern pattern = Pattern.compile(thresholdRegEx);
+            Matcher matcher = pattern.matcher(thresholdOptionValue);
+            if (!matcher.find()) {
+                throw new ParseException("Invalid threshold: '" + thresholdOptionValue + "'");
+            }
+        }
     }
 
     /**
@@ -264,6 +291,19 @@ public class Main {
                 }
             }
 
+            // Bottlenecks
+            List<String> bottlenecks = jvmRun.getBottlenecks();
+            if (bottlenecks.size() > 0) {
+                bufferedWriter.write("========================================" + Constants.LINE_SEPARATOR);
+                bufferedWriter.write(
+                        "Throughput less than " + jvmRun.getThroughputThreshold() + "%" + Constants.LINE_SEPARATOR);
+                bufferedWriter.write("----------------------------------------" + Constants.LINE_SEPARATOR);
+                Iterator<String> iterator = bottlenecks.iterator();
+                while (iterator.hasNext()) {
+                    bufferedWriter.write(iterator.next() + Constants.LINE_SEPARATOR);
+                }
+            }
+
             // JVM information
             if (jvmRun.getJvm().getVersion() != null || jvmRun.getJvm().getOptions() != null) {
                 bufferedWriter.write("========================================" + Constants.LINE_SEPARATOR);
@@ -282,22 +322,7 @@ public class Main {
             bufferedWriter.write("SUMMARY:" + Constants.LINE_SEPARATOR);
             bufferedWriter.write("----------------------------------------" + Constants.LINE_SEPARATOR);
 
-            // Safepoint stats
-            bufferedWriter.write("# Safepoint Events: " + jvmRun.getSafepointCount() + Constants.LINE_SEPARATOR);
-            if (jvmRun.getRevokeBiasCount() > 0) {
-                bufferedWriter
-                        .write("# Deoptimize: " + jvmRun.getDeoptimizeCount() + System.getProperty("line.separator"));
-                BigDecimal totalDeoptimizeTime = JdkMath.convertMillisToSecs(jvmRun.getDeoptimizeTime());
-                bufferedWriter.write(
-                        "Deoptimize Time: " + totalDeoptimizeTime.toString() + " secs" + Constants.LINE_SEPARATOR);
-            }
-            if (jvmRun.getRevokeBiasCount() > 0) {
-                bufferedWriter
-                        .write("# RevokeBias: " + jvmRun.getRevokeBiasCount() + System.getProperty("line.separator"));
-                BigDecimal totalRevokeBiasTime = JdkMath.convertMillisToSecs(jvmRun.getRevokeBiasTime());
-                bufferedWriter.write(
-                        "RevokeBias Time: " + totalRevokeBiasTime.toString() + " secs" + Constants.LINE_SEPARATOR);
-            }
+            // TODO
 
             bufferedWriter.write("========================================" + Constants.LINE_SEPARATOR);
 

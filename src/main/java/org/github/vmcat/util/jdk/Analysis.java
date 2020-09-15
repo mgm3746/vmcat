@@ -31,9 +31,9 @@ public enum Analysis {
     ERROR_TBD("error.tbd"),
 
     /**
-     * Property key for TBD.
+     * Property key for partial log file.
      */
-    INFO_TBD("info.tbd"),
+    INFO_FIRST_TIMESTAMP_THRESHOLD_EXCEEDED("info.first.timestamp.threshold.exceeded"),
 
     /**
      * Property key for TBD.

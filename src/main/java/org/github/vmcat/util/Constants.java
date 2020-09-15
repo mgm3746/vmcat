@@ -32,6 +32,12 @@ public class Constants {
     public static final int FIRST_TIMESTAMP_THRESHOLD = 60;
 
     /**
+     * The minimum throughput (percent of time spent not doing garbage collection for a given time interval) to not be
+     * flagged a bottleneck.
+     */
+    public static final int DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD = 90;
+
+    /**
      * kilobyte
      */
     public static final BigDecimal KILOBYTE = new BigDecimal("1024");
@@ -85,6 +91,26 @@ public class Constants {
      * Latest version command line long option.
      */
     public static final String OPTION_LATEST_VERSION_LONG = "latest";
+
+    /**
+     * JVM start datetime command line short option.
+     */
+    public static final String OPTION_STARTDATETIME_SHORT = "s";
+
+    /**
+     * JVM start datetime command line long option.
+     */
+    public static final String OPTION_STARTDATETIME_LONG = "startdatetime";
+
+    /**
+     * Threshold command line short option.
+     */
+    public static final String OPTION_THRESHOLD_SHORT = "t";
+
+    /**
+     * Threshold command line long option.
+     */
+    public static final String OPTION_THRESHOLD_LONG = "threshold";
 
     /**
      * Default output file name.
