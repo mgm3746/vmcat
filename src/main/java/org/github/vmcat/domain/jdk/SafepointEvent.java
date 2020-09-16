@@ -22,6 +22,7 @@ import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
 import org.github.vmcat.util.jdk.JdkUtil.TriggerType;
+import org.github.vmcat.util.jdk.Trigger;
 
 /**
  * <p>
@@ -54,14 +55,12 @@ public class SafepointEvent implements LogEvent {
     /**
      * Trigger(s) regular expression(s).
      */
-    private static final String TRIGGER = "(" + JdkRegEx.TRIGGER_BULK_REVOKE_BIAS + "|"
-            + JdkRegEx.TRIGGER_COLLECT_FOR_METADATA_ALLOCATION + "|" + JdkRegEx.TRIGGER_DEOPTIMIZE + "|"
-            + JdkRegEx.TRIGGER_ENABLE_BIASED_LOCKING + "|" + JdkRegEx.TRIGGER_FIND_DEADLOCKS + "|"
-            + JdkRegEx.TRIGGER_FORCE_SAFEPOINT + "|" + JdkRegEx.TRIGGER_FORCE_SAFEPOINT + "|"
-            + JdkRegEx.TRIGGER_GEN_COLLECT_FOR_ALLOCATION + "|" + JdkRegEx.TRIGGER_NO_VM_OPERATION + "|"
-            + JdkRegEx.TRIGGER_PARALLEL_GC_FAILED_ALLOCATION + "|" + JdkRegEx.TRIGGER_PARALLEL_GC_SYSTEM_GC + "|"
-            + JdkRegEx.TRIGGER_PRINT_JNI + "|" + JdkRegEx.TRIGGER_PRINT_THREADS + "|" + JdkRegEx.TRIGGER_REVOKE_BIAS
-            + "|" + JdkRegEx.TRIGGER_THREAD_DUMP + ")";
+    private static final String TRIGGER = "(" + Trigger.BULK_REVOKE_BIAS + "|" + Trigger.COLLECT_FOR_METADATA_ALLOCATION
+            + "|" + Trigger.DEOPTIMIZE + "|" + Trigger.ENABLE_BIASED_LOCKING + "|" + Trigger.FIND_DEADLOCKS + "|"
+            + Trigger.FORCE_SAFEPOINT + "|" + Trigger.FORCE_SAFEPOINT + "|" + Trigger.GEN_COLLECT_FOR_ALLOCATION + "|"
+            + Trigger.NO_VM_OPERATION + "|" + Trigger.PARALLEL_GC_FAILED_ALLOCATION + "|"
+            + Trigger.PARALLEL_GC_SYSTEM_GC + "|" + Trigger.PRINT_JNI + "|" + Trigger.PRINT_THREADS + "|"
+            + Trigger.REVOKE_BIAS + "|" + Trigger.THREAD_DUMP + ")";
 
     /**
      * Regular expression defining the logging.
@@ -143,33 +142,33 @@ public class SafepointEvent implements LogEvent {
         if (matcher.find()) {
             timestamp = JdkMath.convertSecsToMillis(matcher.group(12)).longValue();
             String trigger = matcher.group(13);
-            if (trigger.equals(JdkRegEx.TRIGGER_BULK_REVOKE_BIAS)) {
+            if (trigger.equals(Trigger.BULK_REVOKE_BIAS)) {
                 triggerType = JdkUtil.TriggerType.BULK_REVOKE_BIAS;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_COLLECT_FOR_METADATA_ALLOCATION)) {
+            } else if (trigger.equals(Trigger.COLLECT_FOR_METADATA_ALLOCATION)) {
                 triggerType = JdkUtil.TriggerType.COLLECT_FOR_METADATA_ALLOCATION;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_DEOPTIMIZE)) {
+            } else if (trigger.equals(Trigger.DEOPTIMIZE)) {
                 triggerType = JdkUtil.TriggerType.DEOPTIMIZE;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_ENABLE_BIASED_LOCKING)) {
+            } else if (trigger.equals(Trigger.ENABLE_BIASED_LOCKING)) {
                 triggerType = JdkUtil.TriggerType.ENABLE_BIASED_LOCKING;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_FIND_DEADLOCKS)) {
+            } else if (trigger.equals(Trigger.FIND_DEADLOCKS)) {
                 triggerType = JdkUtil.TriggerType.FIND_DEADLOCKS;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_FORCE_SAFEPOINT)) {
+            } else if (trigger.equals(Trigger.FORCE_SAFEPOINT)) {
                 triggerType = JdkUtil.TriggerType.FORCE_SAFEPOINT;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_GEN_COLLECT_FOR_ALLOCATION)) {
+            } else if (trigger.equals(Trigger.GEN_COLLECT_FOR_ALLOCATION)) {
                 triggerType = JdkUtil.TriggerType.GEN_COLLECT_FOR_ALLOCATION;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_NO_VM_OPERATION)) {
+            } else if (trigger.equals(Trigger.NO_VM_OPERATION)) {
                 triggerType = JdkUtil.TriggerType.NO_VM_OPERATION;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_PARALLEL_GC_FAILED_ALLOCATION)) {
+            } else if (trigger.equals(Trigger.PARALLEL_GC_FAILED_ALLOCATION)) {
                 triggerType = JdkUtil.TriggerType.PARALLEL_GC_FAILED_ALLOCATION;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_PARALLEL_GC_SYSTEM_GC)) {
+            } else if (trigger.equals(Trigger.PARALLEL_GC_SYSTEM_GC)) {
                 triggerType = JdkUtil.TriggerType.PARALLEL_GC_SYSTEM_GC;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_PRINT_JNI)) {
+            } else if (trigger.equals(Trigger.PRINT_JNI)) {
                 triggerType = JdkUtil.TriggerType.PRINT_JNI;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_PRINT_THREADS)) {
+            } else if (trigger.equals(Trigger.PRINT_THREADS)) {
                 triggerType = JdkUtil.TriggerType.PRINT_THREADS;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_REVOKE_BIAS)) {
+            } else if (trigger.equals(Trigger.REVOKE_BIAS)) {
                 triggerType = JdkUtil.TriggerType.REVOKE_BIAS;
-            } else if (trigger.equals(JdkRegEx.TRIGGER_THREAD_DUMP)) {
+            } else if (trigger.equals(Trigger.THREAD_DUMP)) {
                 triggerType = JdkUtil.TriggerType.THREAD_DUMP;
             }
             threadsTotal = Integer.parseInt(matcher.group(14));

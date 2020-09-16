@@ -264,46 +264,46 @@ public class JdkUtil {
         switch (triggerType) {
 
         case BULK_REVOKE_BIAS:
-            triggerLiteral = JdkRegEx.TRIGGER_BULK_REVOKE_BIAS;
+            triggerLiteral = Trigger.BULK_REVOKE_BIAS;
             break;
         case COLLECT_FOR_METADATA_ALLOCATION:
-            triggerLiteral = JdkRegEx.TRIGGER_COLLECT_FOR_METADATA_ALLOCATION;
+            triggerLiteral = Trigger.COLLECT_FOR_METADATA_ALLOCATION;
             break;
         case DEOPTIMIZE:
-            triggerLiteral = JdkRegEx.TRIGGER_DEOPTIMIZE;
+            triggerLiteral = Trigger.DEOPTIMIZE;
             break;
         case ENABLE_BIASED_LOCKING:
-            triggerLiteral = JdkRegEx.TRIGGER_ENABLE_BIASED_LOCKING;
+            triggerLiteral = Trigger.ENABLE_BIASED_LOCKING;
             break;
         case FIND_DEADLOCKS:
-            triggerLiteral = JdkRegEx.TRIGGER_FIND_DEADLOCKS;
+            triggerLiteral = Trigger.FIND_DEADLOCKS;
             break;
         case FORCE_SAFEPOINT:
-            triggerLiteral = JdkRegEx.TRIGGER_FORCE_SAFEPOINT;
+            triggerLiteral = Trigger.FORCE_SAFEPOINT;
             break;
         case GEN_COLLECT_FOR_ALLOCATION:
-            triggerLiteral = JdkRegEx.TRIGGER_GEN_COLLECT_FOR_ALLOCATION;
+            triggerLiteral = Trigger.GEN_COLLECT_FOR_ALLOCATION;
             break;
         case NO_VM_OPERATION:
-            triggerLiteral = JdkRegEx.TRIGGER_NO_VM_OPERATION;
+            triggerLiteral = Trigger.NO_VM_OPERATION;
             break;
         case PARALLEL_GC_FAILED_ALLOCATION:
-            triggerLiteral = JdkRegEx.TRIGGER_PARALLEL_GC_FAILED_ALLOCATION;
+            triggerLiteral = Trigger.PARALLEL_GC_FAILED_ALLOCATION;
             break;
         case PARALLEL_GC_SYSTEM_GC:
-            triggerLiteral = JdkRegEx.TRIGGER_PARALLEL_GC_SYSTEM_GC;
+            triggerLiteral = Trigger.PARALLEL_GC_SYSTEM_GC;
             break;
         case PRINT_JNI:
-            triggerLiteral = JdkRegEx.TRIGGER_PRINT_JNI;
+            triggerLiteral = Trigger.PRINT_JNI;
             break;
         case PRINT_THREADS:
-            triggerLiteral = JdkRegEx.TRIGGER_PRINT_THREADS;
+            triggerLiteral = Trigger.PRINT_THREADS;
             break;
         case REVOKE_BIAS:
-            triggerLiteral = JdkRegEx.TRIGGER_REVOKE_BIAS;
+            triggerLiteral = Trigger.REVOKE_BIAS;
             break;
         case THREAD_DUMP:
-            triggerLiteral = JdkRegEx.TRIGGER_THREAD_DUMP;
+            triggerLiteral = Trigger.THREAD_DUMP;
             break;
 
         default:
@@ -387,36 +387,39 @@ public class JdkUtil {
     /**
      * TriggerType Determine if the <code>SafepointEvent</code> should be classified as a bottleneck.
      * 
-     * @param event
+     * @param currentSafepointEvent
      *            Current <code>SafepointEvent</code>.
-     * @param event
+     * @param previouseSafepointEvent
      *            Previous <code>SafepointEvent</code>.
      * @param throughputThreshold
      *            Throughput threshold (percent of time spent not is safepoint for a given time interval) to be
      *            considered a bottleneck. Whole number 0-100.
      * @return True if the <code>SafepointEvent</code> pause time meets the bottleneck definition.
      */
-    public static final boolean isBottleneck(SafepointEvent safepointEvent, SafepointEvent event,
-            int throughputThreshold) throws TimeWarpException {
+    public static final boolean isBottleneck(SafepointEvent currentSafepointEvent,
+            SafepointEvent previouseSafepointEvent, int throughputThreshold) throws TimeWarpException {
 
         /*
          * Current event should not start until prior even finishes. Allow 1 thousandth of a second overlap to account,
          * DEOPTIMIZE, ENABLE_BIASED_LOCKING, REVOKE_BIAS for precision and rounding limitations.
          */
-        if (safepointEvent.getTimestamp() < (event.getTimestamp() + event.getDuration() - 1)) {
-            throw new TimeWarpException("Event overlap: " + Constants.LINE_SEPARATOR + event.getLogEntry()
-                    + Constants.LINE_SEPARATOR + safepointEvent.getLogEntry());
+        if (currentSafepointEvent.getTimestamp() < (previouseSafepointEvent.getTimestamp()
+                + previouseSafepointEvent.getDuration() - 1)) {
+            throw new TimeWarpException(
+                    "Event overlap: " + Constants.LINE_SEPARATOR + previouseSafepointEvent.getLogEntry()
+                            + Constants.LINE_SEPARATOR + currentSafepointEvent.getLogEntry());
         }
 
         /*
          * Timestamp is the start of a garbage collection event; therefore, the interval is from the end of the prior
          * event to the end of the current event.
          */
-        long interval = safepointEvent.getTimestamp() + safepointEvent.getDuration() - event.getTimestamp()
-                - event.getDuration();
+        long interval = currentSafepointEvent.getTimestamp() + currentSafepointEvent.getDuration()
+                - previouseSafepointEvent.getTimestamp() - previouseSafepointEvent.getDuration();
         if (interval < 0) {
-            throw new TimeWarpException("Negative interval: " + Constants.LINE_SEPARATOR + event.getLogEntry()
-                    + Constants.LINE_SEPARATOR + safepointEvent.getLogEntry());
+            throw new TimeWarpException(
+                    "Negative interval: " + Constants.LINE_SEPARATOR + previouseSafepointEvent.getLogEntry()
+                            + Constants.LINE_SEPARATOR + currentSafepointEvent.getLogEntry());
         }
 
         // Determine the maximum duration for the given interval that meets the
@@ -425,7 +428,7 @@ public class JdkUtil {
         durationThreshold = durationThreshold.movePointLeft(2);
         durationThreshold = durationThreshold.multiply(new BigDecimal(interval));
         durationThreshold.setScale(0, RoundingMode.DOWN);
-        return (safepointEvent.getDuration() > durationThreshold.intValue());
+        return (currentSafepointEvent.getDuration() > durationThreshold.intValue());
     }
 
     /**

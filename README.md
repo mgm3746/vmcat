@@ -1,4 +1,4 @@
-# logvm
+# vmcat
 A command line tool to parse Java -XX:+LogVMOutput and do analysis to support JVM tuning and troubleshooting for OpenJDK and Oracle JDK.
 
 ## Supports

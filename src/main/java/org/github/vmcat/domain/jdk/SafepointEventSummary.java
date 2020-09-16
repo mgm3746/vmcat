@@ -53,7 +53,7 @@ public class SafepointEventSummary {
      *            Number of events.
      * @param pauseTotal
      *            Total pause time of events
-     * @param pauseTotal
+     * @param pauseMax
      *            Max pause time of events
      */
     public SafepointEventSummary(TriggerType triggerType, long count, long pauseTotal, int pauseMax) {
