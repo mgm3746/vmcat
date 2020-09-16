@@ -553,12 +553,13 @@ public class JvmDao {
         try {
             statement = connection.createStatement();
             StringBuffer sql = new StringBuffer();
-            sql.append("select trigger_type, count(id), sum(sync + cleanup + vmop) from safepoint_event group by "
-                    + "trigger_type order by sum(sync + cleanup + vmop) desc");
+            sql.append("select trigger_type, count(id), sum(sync + cleanup + vmop), max(sync + cleanup + vmop) from "
+                    + "safepoint_event group by trigger_type order by sum(sync + cleanup + vmop) desc");
             rs = statement.executeQuery(sql.toString());
             while (rs.next()) {
                 TriggerType triggerType = JdkUtil.identifyTriggerType(rs.getString(1));
-                SafepointEventSummary summary = new SafepointEventSummary(triggerType, rs.getLong(2), rs.getLong(3));
+                SafepointEventSummary summary = new SafepointEventSummary(triggerType, rs.getLong(2), rs.getLong(3),
+                        rs.getInt(4));
                 safepointEventSummaries.add(summary);
             }
         } catch (SQLException e) {

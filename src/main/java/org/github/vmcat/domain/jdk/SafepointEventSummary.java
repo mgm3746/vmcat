@@ -37,7 +37,12 @@ public class SafepointEventSummary {
     /**
      * Total pause time (milliseconds).
      */
-    private long pause;
+    private long pauseTotal;
+
+    /**
+     * Max pause time (milliseconds).
+     */
+    private int pauseMax;
 
     /**
      * Default constructor.
@@ -46,13 +51,16 @@ public class SafepointEventSummary {
      *            The <code>TriggerType</code>.
      * @param count
      *            Number of events.
-     * @param pause
-     *            Pause time of events
+     * @param pauseTotal
+     *            Total pause time of events
+     * @param pauseTotal
+     *            Max pause time of events
      */
-    public SafepointEventSummary(TriggerType triggerType, long count, long pause) {
+    public SafepointEventSummary(TriggerType triggerType, long count, long pauseTotal, int pauseMax) {
         this.triggerType = triggerType;
         this.count = count;
-        this.pause = pause;
+        this.pauseTotal = pauseTotal;
+        this.pauseMax = pauseMax;
     }
 
     public TriggerType getTriggerType() {
@@ -63,7 +71,11 @@ public class SafepointEventSummary {
         return count;
     }
 
-    public long getPause() {
-        return pause;
+    public long getPauseTotal() {
+        return pauseTotal;
+    }
+
+    public long getPauseMax() {
+        return pauseMax;
     }
 }

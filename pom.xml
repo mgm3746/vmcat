@@ -6,7 +6,7 @@
 	<groupId>vmcat</groupId>
 	<artifactId>vmcat</artifactId>
 	<name>vmcat</name>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<description>Java -XX:+LogVMOutput analyzer tool.</description>
 	<url>https://github.com/mgm3746/vmcat</url>
 	<developers>

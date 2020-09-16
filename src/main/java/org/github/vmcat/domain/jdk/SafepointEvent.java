@@ -57,7 +57,8 @@ public class SafepointEvent implements LogEvent {
     private static final String TRIGGER = "(" + JdkRegEx.TRIGGER_BULK_REVOKE_BIAS + "|"
             + JdkRegEx.TRIGGER_COLLECT_FOR_METADATA_ALLOCATION + "|" + JdkRegEx.TRIGGER_DEOPTIMIZE + "|"
             + JdkRegEx.TRIGGER_ENABLE_BIASED_LOCKING + "|" + JdkRegEx.TRIGGER_FIND_DEADLOCKS + "|"
-            + JdkRegEx.TRIGGER_FORCE_SAFEPOINT + "|" + JdkRegEx.TRIGGER_NO_VM_OPERATION + "|"
+            + JdkRegEx.TRIGGER_FORCE_SAFEPOINT + "|" + JdkRegEx.TRIGGER_FORCE_SAFEPOINT + "|"
+            + JdkRegEx.TRIGGER_GEN_COLLECT_FOR_ALLOCATION + "|" + JdkRegEx.TRIGGER_NO_VM_OPERATION + "|"
             + JdkRegEx.TRIGGER_PARALLEL_GC_FAILED_ALLOCATION + "|" + JdkRegEx.TRIGGER_PARALLEL_GC_SYSTEM_GC + "|"
             + JdkRegEx.TRIGGER_PRINT_JNI + "|" + JdkRegEx.TRIGGER_PRINT_THREADS + "|" + JdkRegEx.TRIGGER_REVOKE_BIAS
             + "|" + JdkRegEx.TRIGGER_THREAD_DUMP + ")";
@@ -154,6 +155,8 @@ public class SafepointEvent implements LogEvent {
                 triggerType = JdkUtil.TriggerType.FIND_DEADLOCKS;
             } else if (trigger.equals(JdkRegEx.TRIGGER_FORCE_SAFEPOINT)) {
                 triggerType = JdkUtil.TriggerType.FORCE_SAFEPOINT;
+            } else if (trigger.equals(JdkRegEx.TRIGGER_GEN_COLLECT_FOR_ALLOCATION)) {
+                triggerType = JdkUtil.TriggerType.GEN_COLLECT_FOR_ALLOCATION;
             } else if (trigger.equals(JdkRegEx.TRIGGER_NO_VM_OPERATION)) {
                 triggerType = JdkUtil.TriggerType.NO_VM_OPERATION;
             } else if (trigger.equals(JdkRegEx.TRIGGER_PARALLEL_GC_FAILED_ALLOCATION)) {

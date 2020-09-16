@@ -76,9 +76,9 @@ public class JdkUtil {
     public enum TriggerType {
         BULK_REVOKE_BIAS, COLLECT_FOR_METADATA_ALLOCATION, DEOPTIMIZE, ENABLE_BIASED_LOCKING, FIND_DEADLOCKS,
         //
-        FORCE_SAFEPOINT, NO_VM_OPERATION, PARALLEL_GC_FAILED_ALLOCATION, PARALLEL_GC_SYSTEM_GC, PRINT_JNI,
+        FORCE_SAFEPOINT, GEN_COLLECT_FOR_ALLOCATION, NO_VM_OPERATION, PARALLEL_GC_FAILED_ALLOCATION,
         //
-        PRINT_THREADS, REVOKE_BIAS, THREAD_DUMP, UNKNOWN
+        PARALLEL_GC_SYSTEM_GC, PRINT_JNI, PRINT_THREADS, REVOKE_BIAS, THREAD_DUMP, UNKNOWN
     };
 
     /**
@@ -231,6 +231,8 @@ public class JdkUtil {
             return TriggerType.FIND_DEADLOCKS;
         if (TriggerType.FORCE_SAFEPOINT.toString().matches(trigger))
             return TriggerType.FORCE_SAFEPOINT;
+        if (TriggerType.GEN_COLLECT_FOR_ALLOCATION.toString().matches(trigger))
+            return TriggerType.GEN_COLLECT_FOR_ALLOCATION;
         if (TriggerType.NO_VM_OPERATION.toString().matches(trigger))
             return TriggerType.NO_VM_OPERATION;
         if (TriggerType.PARALLEL_GC_FAILED_ALLOCATION.toString().matches(trigger))
@@ -248,6 +250,66 @@ public class JdkUtil {
 
         // no idea what trigger is
         return TriggerType.UNKNOWN;
+    }
+
+    /**
+     * Get <code>TriggerType</code> vm log literal.
+     * 
+     * @param triggerType
+     *            The trigger type.
+     * @return The trigger literal in the vm log line.
+     */
+    public static final String getTriggerLiteral(TriggerType triggerType) {
+        String triggerLiteral = null;
+        switch (triggerType) {
+
+        case BULK_REVOKE_BIAS:
+            triggerLiteral = JdkRegEx.TRIGGER_BULK_REVOKE_BIAS;
+            break;
+        case COLLECT_FOR_METADATA_ALLOCATION:
+            triggerLiteral = JdkRegEx.TRIGGER_COLLECT_FOR_METADATA_ALLOCATION;
+            break;
+        case DEOPTIMIZE:
+            triggerLiteral = JdkRegEx.TRIGGER_DEOPTIMIZE;
+            break;
+        case ENABLE_BIASED_LOCKING:
+            triggerLiteral = JdkRegEx.TRIGGER_ENABLE_BIASED_LOCKING;
+            break;
+        case FIND_DEADLOCKS:
+            triggerLiteral = JdkRegEx.TRIGGER_FIND_DEADLOCKS;
+            break;
+        case FORCE_SAFEPOINT:
+            triggerLiteral = JdkRegEx.TRIGGER_FORCE_SAFEPOINT;
+            break;
+        case GEN_COLLECT_FOR_ALLOCATION:
+            triggerLiteral = JdkRegEx.TRIGGER_GEN_COLLECT_FOR_ALLOCATION;
+            break;
+        case NO_VM_OPERATION:
+            triggerLiteral = JdkRegEx.TRIGGER_NO_VM_OPERATION;
+            break;
+        case PARALLEL_GC_FAILED_ALLOCATION:
+            triggerLiteral = JdkRegEx.TRIGGER_PARALLEL_GC_FAILED_ALLOCATION;
+            break;
+        case PARALLEL_GC_SYSTEM_GC:
+            triggerLiteral = JdkRegEx.TRIGGER_PARALLEL_GC_SYSTEM_GC;
+            break;
+        case PRINT_JNI:
+            triggerLiteral = JdkRegEx.TRIGGER_PRINT_JNI;
+            break;
+        case PRINT_THREADS:
+            triggerLiteral = JdkRegEx.TRIGGER_PRINT_THREADS;
+            break;
+        case REVOKE_BIAS:
+            triggerLiteral = JdkRegEx.TRIGGER_REVOKE_BIAS;
+            break;
+        case THREAD_DUMP:
+            triggerLiteral = JdkRegEx.TRIGGER_THREAD_DUMP;
+            break;
+
+        default:
+            throw new AssertionError("Unexpected trigger type value: " + triggerType);
+        }
+        return triggerLiteral;
     }
 
     /**

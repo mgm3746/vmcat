@@ -205,9 +205,15 @@ public class JvmRun {
      */
     public void doAnalysis() {
 
+        // Unidentified logging lines
+        if (getUnidentifiedLogLines().size() > 0) {
+            analysis.add(0, Analysis.WARN_UNIDENTIFIED_LOG_LINE_REPORT);
+        }
+
         if (jvm.getOptions() != null) {
             doJvmOptionsAnalysis();
         }
+
         // TODO:
         if (haveData()) {
             doDataAnalysis();

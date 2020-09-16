@@ -36,9 +36,9 @@ public enum Analysis {
     INFO_FIRST_TIMESTAMP_THRESHOLD_EXCEEDED("info.first.timestamp.threshold.exceeded"),
 
     /**
-     * Property key for TBD.
+     * Property key for unidentified line(s) needing reporting.
      */
-    WARN_TBD("warn.tbd");
+    WARN_UNIDENTIFIED_LOG_LINE_REPORT("warn.unidentified.log.line.report");
 
     private String key;
 

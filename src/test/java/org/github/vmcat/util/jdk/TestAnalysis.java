@@ -44,9 +44,19 @@ public class TestAnalysis extends TestCase {
         File testFile = new File(Constants.TEST_DATA_DIR + "dataset1.txt");
         Manager manager = new Manager();
         manager.store(testFile);
-        JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
+        JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertTrue(Analysis.INFO_FIRST_TIMESTAMP_THRESHOLD_EXCEEDED + " analysis not identified.",
                 jvmRun.getAnalysis().contains(Analysis.INFO_FIRST_TIMESTAMP_THRESHOLD_EXCEEDED));
+
+    }
+
+    public void testUnknownLogLine() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset10.txt");
+        Manager manager = new Manager();
+        manager.store(testFile);
+        JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
+        Assert.assertTrue(Analysis.WARN_UNIDENTIFIED_LOG_LINE_REPORT + " analysis not identified.",
+                jvmRun.getAnalysis().contains(Analysis.WARN_UNIDENTIFIED_LOG_LINE_REPORT));
 
     }
 

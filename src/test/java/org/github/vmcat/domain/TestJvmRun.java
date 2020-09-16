@@ -18,6 +18,7 @@ import java.io.File;
 
 import org.github.vmcat.service.Manager;
 import org.github.vmcat.util.Constants;
+import org.github.vmcat.util.jdk.Analysis;
 import org.github.vmcat.util.jdk.JdkUtil;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
 
@@ -34,7 +35,7 @@ public class TestJvmRun extends TestCase {
         File testFile = new File(Constants.TEST_DATA_DIR + "dataset9.txt");
         Manager manager = new Manager();
         manager.store(testFile);
-        JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
+        JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " event identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
         Assert.assertTrue(JdkUtil.LogEventType.HEADER.toString() + " event not identified.",
@@ -51,13 +52,15 @@ public class TestJvmRun extends TestCase {
         Assert.assertEquals("Safepoint last duration not correct.", 33, jvmRun.getLastSafepointEvent().getDuration());
         Assert.assertEquals("JVM run duration not correct.", 10789, jvmRun.getJvmRunDuration());
         Assert.assertEquals("Throughput not correct.", 96, jvmRun.getThroughput());
+        Assert.assertFalse(Analysis.WARN_UNIDENTIFIED_LOG_LINE_REPORT + " analysis incorrectly identified.",
+                jvmRun.getAnalysis().contains(Analysis.WARN_UNIDENTIFIED_LOG_LINE_REPORT));
     }
 
     public void testSummaryStatsPartialLog() {
         File testFile = new File(Constants.TEST_DATA_DIR + "dataset1.txt");
         Manager manager = new Manager();
         manager.store(testFile);
-        JvmRun jvmRun = manager.getJvmRun(new Jvm(null), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
+        JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " event identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
         Assert.assertTrue(JdkUtil.LogEventType.HEADER.toString() + " event not identified.",
@@ -74,5 +77,7 @@ public class TestJvmRun extends TestCase {
         Assert.assertEquals("Safepoint last duration not correct.", 33, jvmRun.getLastSafepointEvent().getDuration());
         Assert.assertEquals("JVM run duration not correct.", 3066, jvmRun.getJvmRunDuration());
         Assert.assertEquals("Throughput not correct.", 86, jvmRun.getThroughput());
+        Assert.assertFalse(Analysis.WARN_UNIDENTIFIED_LOG_LINE_REPORT + " analysis incorrectly identified.",
+                jvmRun.getAnalysis().contains(Analysis.WARN_UNIDENTIFIED_LOG_LINE_REPORT));
     }
 }

@@ -64,7 +64,7 @@ public class JdkRegEx {
      * [    2404          0              1    ]
      * </pre>
      */
-    public static final String THREAD_BLOCK = "\\[[ ]{4,6}" + JdkRegEx.NUMBER + "[ ]{9,10}" + JdkRegEx.NUMBER
+    public static final String THREAD_BLOCK = "\\[[ ]{4,7}" + JdkRegEx.NUMBER + "[ ]{9,10}" + JdkRegEx.NUMBER
             + "[ ]{12,14}" + JdkRegEx.NUMBER + "[ ]{4}\\]";
 
     /**
@@ -153,6 +153,13 @@ public class JdkRegEx {
 
     /**
      * <p>
+     * Serial collection.
+     * </p>
+     */
+    public static final String TRIGGER_GEN_COLLECT_FOR_ALLOCATION = "GenCollectForAllocation";
+
+    /**
+     * <p>
      * Guaranteed safepoint to process non-urgent JVM operations. The interval is enabled by
      * <code>-XX:+UnlockDiagnosticVMOptions</code> and controlled by <code>-XX:GuaranteedSafepointInterval=N</code>
      * (default 300000 seconds = 5 minutes).
@@ -162,14 +169,14 @@ public class JdkRegEx {
 
     /**
      * <p>
-     * Concurrent Mark Sweep (CMS) collection.
+     * Parallel collection.
      * </p>
      */
     public static final String TRIGGER_PARALLEL_GC_FAILED_ALLOCATION = "ParallelGCFailedAllocation";
 
     /**
      * <p>
-     * Concurrent Mark Sweep (CMS) collection initiated by explicit gc.
+     * Parallel collection initiated by explicit gc.
      * </p>
      */
     public static final String TRIGGER_PARALLEL_GC_SYSTEM_GC = "ParallelGCSystemGC";

@@ -93,16 +93,6 @@ public class Constants {
     public static final String OPTION_LATEST_VERSION_LONG = "latest";
 
     /**
-     * JVM start datetime command line short option.
-     */
-    public static final String OPTION_STARTDATETIME_SHORT = "s";
-
-    /**
-     * JVM start datetime command line long option.
-     */
-    public static final String OPTION_STARTDATETIME_LONG = "startdatetime";
-
-    /**
      * Threshold command line short option.
      */
     public static final String OPTION_THRESHOLD_SHORT = "t";

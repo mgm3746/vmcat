@@ -40,13 +40,9 @@ public class Jvm {
     private String version;
 
     /**
-     * Constructor accepting list of JVM options.
-     * 
-     * @param jvmStartDate
-     *            The date and time the JVM was started.
+     * Default constructor.
      */
-    public Jvm(Date jvmStartDate) {
-        this.startDate = jvmStartDate;
+    public Jvm() {
     }
 
     /**

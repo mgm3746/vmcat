@@ -363,4 +363,30 @@ public class TestSafepointEvent extends TestCase {
         Assert.assertEquals("Page trap count not parsed correctly.", 0, event.getPageTrapCount());
         Assert.assertEquals("Duration not calculated correctly.", 1819, event.getDuration());
     }
+
+    public void testLogLineTriggerGenCollectForAllocation() {
+        String logLine = "47.775: GenCollectForAllocation          [       8          0              0    ]      "
+                + "[     0     0     0     0     0    ]  0";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.SAFEPOINT.toString() + ".",
+                SafepointEvent.match(logLine));
+        SafepointEvent event = new SafepointEvent(logLine);
+        Assert.assertEquals("Time stamp not parsed correctly.", 47775, event.getTimestamp());
+        Assert.assertEquals("Trigger not parsed correctly.", JdkUtil.TriggerType.GEN_COLLECT_FOR_ALLOCATION,
+                event.getTriggerType());
+        Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 8,
+                event.getThreadsTotal());
+        Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
+                event.getThreadsSpinning());
+        Assert.assertEquals("Number of threads that were blocked before safepoint not parsed correctly.", 0,
+                event.getThreadsBlocked());
+        Assert.assertEquals("Time for spinning threads to reach safepoint.", 0, event.getTimeSpin());
+        Assert.assertEquals("Time for blocked threads to reach safepoint not parsed correctly.", 0,
+                event.getTimeBlock());
+        Assert.assertEquals("Time for all threads to reach safepoint (sync) not parsed correctly.", 0,
+                event.getTimeSync());
+        Assert.assertEquals("Time for cleanup activities not parsed correctly.", 0, event.getTimeCleanup());
+        Assert.assertEquals("Time for safepoint activity (vmop) not parsed correctly.", 0, event.getTimeVmop());
+        Assert.assertEquals("Page trap count not parsed correctly.", 0, event.getPageTrapCount());
+        Assert.assertEquals("Duration not calculated correctly.", 0, event.getDuration());
+    }
 }
