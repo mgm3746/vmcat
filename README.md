@@ -6,7 +6,7 @@ A command line tool to parse Java -XX:+LogVMOutput and do analysis to support JV
   * OpenJDK
   * Oracle JDK
   
- ### Recommended GC Logging Options
+ ### Recommended JVM Options
  
  >-XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1
  
@@ -14,12 +14,12 @@ A command line tool to parse Java -XX:+LogVMOutput and do analysis to support JV
 
 Get source:
 ```
-git clone https://github.com/mgm3746/garbagecat.git
+git clone https://github.com/mgm3746/vmcat.git
 ```
 
 Build it:
 ```
-cd garbagecat
+cd vmcat
 mvn clean (rebuilding)
 mvn assembly:assembly
 mvn javadoc:javadoc
@@ -28,7 +28,7 @@ mvn javadoc:javadoc
 ## Usage
 
 ```
-java -jar vmcat-1.0.0-SNAPSHOT.jar --help
+java -jar vmcat-1.0.2-SNAPSHOT.jar --help
 usage: vmcat [OPTION]... [FILE]
  -h,--help              help
  -l,--latest            latest version
