@@ -59,12 +59,13 @@ Throughput less than 5%
 ========================================
 JVM:
 ----------------------------------------
-Version: OpenJDK 64-Bit Server VM (25.201-b09) for linux-amd64 JRE (1.8.0_201-b09), built on Mar  5 2019 10:14:09 by 
-&quot;mockbuild&quot; with gcc 4.4.7 20120313 (Red Hat 4.4.7-23)
-Options: -Xms4G -Xmx4G -XX:+UnlockDiagnosticVMOptions -XX:MetaspaceSize=512M -XX:MaxMetaspaceSize=1024M 
--XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1 -XX:+LogVMOutput -XX:LogFile=vm.log -verbose:gc 
--Xloggc:gc.log -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+HeapDumpOnOutOfMemoryError 
--XX:+PrintGCApplicationStoppedTime -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=10M
+Version: OpenJDK 64-Bit Server VM (25.201-b09) for linux-amd64 JRE (1.8.0_201-b09), built on Mar  
+5 2019 10:14:09 by &quot;mockbuild&quot; with gcc 4.4.7 20120313 (Red Hat 4.4.7-23)
+Options: -Xms4G -Xmx4G -XX:+UnlockDiagnosticVMOptions -XX:MetaspaceSize=512M 
+-XX:MaxMetaspaceSize=1024M -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1 
+-XX:+LogVMOutput -XX:LogFile=vm.log -verbose:gc -Xloggc:gc.log -XX:+PrintGCDetails 
+-XX:+PrintGCTimeStamps -XX:+HeapDumpOnOutOfMemoryError -XX:+PrintGCApplicationStoppedTime 
+-XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=10M
 ========================================
 SUMMARY:
 ----------------------------------------
