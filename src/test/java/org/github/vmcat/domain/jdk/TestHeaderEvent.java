@@ -45,4 +45,11 @@ public class TestHeaderEvent extends TestCase {
         Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.HEADER.toString() + ".",
                 HeaderEvent.match(logLine));
     }
+
+    public void testLogLineJdk11() {
+        String logLine = "          vmop                            [ threads:    total initially_running "
+                + "wait_to_block ][ time:    spin   block    sync cleanup    vmop ] page_trap_count";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.HEADER.toString() + ".",
+                HeaderEvent.match(logLine));
+    }
 }

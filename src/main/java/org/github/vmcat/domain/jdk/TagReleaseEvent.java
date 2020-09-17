@@ -15,32 +15,33 @@
 package org.github.vmcat.domain.jdk;
 
 import org.github.vmcat.domain.TagEvent;
+import org.github.vmcat.domain.ThrowAwayEvent;
 import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_VM_ARGUMENTS_ARGS
+ * TAG_RELEASE
  * </p>
  * 
  * <p>
- * vm_arguments args tag.
+ * vm_version release tag.
  * </p>
  * 
  * <pre>
- * &lt;args&gt;
- * -Xms6G -Xmx8G -XX:+UnlockDiagnosticVMOptions -XX:+UnsyncloadClass -Dcom.sun.management.jmxremote
- * &lt;/args&gt;
+ * &lt;release&gt;
+ * 25.242-b08-debug
+ * &lt;/release&gt;
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmArgumentsArgsEvent implements TagEvent {
+public class TagReleaseEvent implements TagEvent, ThrowAwayEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^<(/)?args>$";
+    private static final String REGEX = "^<(/)?release>$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -48,7 +49,7 @@ public class TagVmArgumentsArgsEvent implements TagEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -58,7 +59,7 @@ public class TagVmArgumentsArgsEvent implements TagEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagVmArgumentsArgsEvent(String logEntry) {
+    public TagReleaseEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -68,7 +69,7 @@ public class TagVmArgumentsArgsEvent implements TagEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_ARGUMENTS_ARGS.toString();
+        return JdkUtil.LogEventType.TAG_RELEASE.toString();
     }
 
     public long getTimestamp() {

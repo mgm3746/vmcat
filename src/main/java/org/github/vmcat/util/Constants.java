@@ -25,8 +25,8 @@ import java.math.BigDecimal;
 public class Constants {
 
     /**
-     * The threshold for the time (seconds) for the first log entry for a GC log to be considered complete. First log
-     * entries with timestamps below the threshold may indicate a partial GC log or GC events that were not a
+     * The threshold for the time (seconds) for the first log entry for a VM log to be considered complete. First log
+     * entries with timestamps below the threshold may indicate a partial VN log or VM events that were not a
      * recognizable format.
      */
     public static final int FIRST_TIMESTAMP_THRESHOLD = 60;

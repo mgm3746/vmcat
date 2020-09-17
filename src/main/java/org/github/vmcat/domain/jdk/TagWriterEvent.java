@@ -47,7 +47,7 @@ public class TagWriterEvent implements TagEvent, ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 

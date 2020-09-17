@@ -39,7 +39,7 @@ public class TagHotspotLogEvent implements TagEvent, ThrowAwayEvent {
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^<hotspot_log.+$";
+    private static final String REGEX = "^<(/)?hotspot_log.+$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -47,7 +47,7 @@ public class TagHotspotLogEvent implements TagEvent, ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 

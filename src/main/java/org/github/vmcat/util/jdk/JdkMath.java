@@ -170,19 +170,19 @@ public class JdkMath {
     }
 
     /**
-     * Calculate the throughput between two garbage collection (GC) points. Throughput is the percent of time not spent
-     * doing GC.
+     * Calculate the throughput between two safepoint events. Throughput is the percent of time not spent in safepoint.
      * 
      * @param currentDuration
-     *            Current collection time spent doing GC (milliseconds) beginning at currentTimestamp.
+     *            Current event time spent in safepoint (milliseconds) beginning at currentTimestamp.
      * @param currentTimestamp
-     *            Current collection timestamp (milliseconds after JVM startup).
+     *            Current safepoint event timestamp (milliseconds after JVM startup).
      * @param priorDuration
-     *            Prior collection time spent doing GC (milliseconds) beginning at priorTimestamp. 0 for the first
-     *            collection.
+     *            Prior safepoint event time in safepoint (milliseconds) beginning at priorTimestamp. 0 for the first
+     *            event.
      * @param priorTimestamp
-     *            Prior collection timestamp (milliseconds after JVM startup). 0 for the first collection.
-     * @return Throughput as a percent. 0 means all time was spent doing GC. 100 means no time was spent doing GC.
+     *            Prior safepoint event timestamp (milliseconds after JVM startup). 0 for the first event.
+     * @return Throughput as a percent. 0 means all time was spent in safepoint. 100 means no time was spent in
+     *         safepoint.
      */
     public static int calcThroughput(final int currentDuration, final long currentTimestamp, final int priorDuration,
             final long priorTimestamp) {

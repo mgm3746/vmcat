@@ -30,44 +30,42 @@ import junit.framework.TestCase;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TestTagVmArgumentsLauncherEvent extends TestCase {
+public class TestTagPropertiesEvent extends TestCase {
 
     public void testParseLogLine() {
-        String logLine = "<launcher>";
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_ARGUMENTS_LAUNCHER.toString() + " not parsed.",
-                JdkUtil.parseLogLine(logLine) instanceof TagVmArgumentsLauncherEvent);
+        String logLine = "<properties>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_PROPERTIES.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagPropertiesEvent);
     }
 
     public void testReportable() {
-        String logLine = "<launcher>";
-        Assert.assertFalse(
-                JdkUtil.LogEventType.TAG_VM_ARGUMENTS_LAUNCHER.toString() + " incorrectly indentified as reportable.",
+        String logLine = "<properties>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_PROPERTIES.toString() + " incorrectly indentified as reportable.",
                 JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
     public void testLogLine() {
-        String logLine = "<launcher>";
-        Assert.assertTrue(
-                "Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_ARGUMENTS_LAUNCHER.toString() + ".",
-                TagVmArgumentsLauncherEvent.match(logLine));
+        String logLine = "<properties>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_PROPERTIES.toString() + ".",
+                TagPropertiesEvent.match(logLine));
     }
 
     public void testLogLineEndTag() {
-        String logLine = "</launcher>";
-        Assert.assertTrue(
-                "Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_ARGUMENTS_LAUNCHER.toString() + ".",
-                TagVmArgumentsLauncherEvent.match(logLine));
+        String logLine = "</properties>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_PROPERTIES.toString() + ".",
+                TagPropertiesEvent.match(logLine));
     }
 
-    public void testLauncherBlock() {
-        File testFile = new File(Constants.TEST_DATA_DIR + "dataset7.txt");
+    public void testPropertiesBlock() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset8.txt");
         Manager manager = new Manager();
         manager.store(testFile);
         JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " vent identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_ARGUMENTS_LAUNCHER.toString() + " not identified.",
-                jvmRun.getEventTypes().contains(LogEventType.TAG_VM_ARGUMENTS_LAUNCHER));
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_PROPERTIES.toString() + " not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.TAG_PROPERTIES));
         Assert.assertEquals("Event type count not correct.", 1, jvmRun.getEventTypes().size());
+
     }
 }

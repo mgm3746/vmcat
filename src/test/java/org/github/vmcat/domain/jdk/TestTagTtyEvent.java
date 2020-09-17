@@ -42,4 +42,10 @@ public class TestTagTtyEvent extends TestCase {
         Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_TTY.toString() + ".",
                 TagTtyEvent.match(logLine));
     }
+
+    public void testLogLineEndTag() {
+        String logLine = "</tty>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_TTY.toString() + ".",
+                TagTtyEvent.match(logLine));
+    }
 }

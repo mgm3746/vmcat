@@ -14,7 +14,7 @@
  *********************************************************************************************************************/
 package org.github.vmcat.domain.jdk;
 
-import org.github.vmcat.util.jdk.JdkUtil.TriggerType;
+import org.github.vmcat.util.jdk.Trigger.TriggerType;
 
 /**
  * <code>SafepointEvent</code> summary used for reporting

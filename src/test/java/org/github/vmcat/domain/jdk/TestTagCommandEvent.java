@@ -30,42 +30,41 @@ import junit.framework.TestCase;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TestTagVmVersionReleaseEvent extends TestCase {
+public class TestTagCommandEvent extends TestCase {
 
     public void testParseLogLine() {
-        String logLine = "<release>";
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_VERSION_RELEASE.toString() + " not parsed.",
-                JdkUtil.parseLogLine(logLine) instanceof TagVmVersionReleaseEvent);
+        String logLine = "<command>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_COMMAND.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagCommandEvent);
     }
 
     public void testReportable() {
-        String logLine = "<release>";
-        Assert.assertFalse(
-                JdkUtil.LogEventType.TAG_VM_VERSION_RELEASE.toString() + " incorrectly indentified as reportable.",
+        String logLine = "<command>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_COMMAND.toString() + " incorrectly indentified as reportable.",
                 JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
     public void testLogLine() {
-        String logLine = "<release>";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_VERSION_RELEASE.toString() + ".",
-                TagVmVersionReleaseEvent.match(logLine));
+        String logLine = "<command>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_COMMAND.toString() + ".",
+                TagCommandEvent.match(logLine));
     }
 
     public void testLogLineEndTag() {
-        String logLine = "</release>";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_VERSION_RELEASE.toString() + ".",
-                TagVmVersionReleaseEvent.match(logLine));
+        String logLine = "</command>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_COMMAND.toString() + ".",
+                TagCommandEvent.match(logLine));
     }
 
-    public void testVersionNameBlock() {
-        File testFile = new File(Constants.TEST_DATA_DIR + "dataset3.txt");
+    public void testCommandBlock() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset6.txt");
         Manager manager = new Manager();
         manager.store(testFile);
         JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " vent identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_VERSION_RELEASE.toString() + " not identified.",
-                jvmRun.getEventTypes().contains(LogEventType.TAG_VM_VERSION_RELEASE));
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_COMMAND.toString() + " not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.TAG_COMMAND));
         Assert.assertEquals("Event type count not correct.", 1, jvmRun.getEventTypes().size());
 
     }

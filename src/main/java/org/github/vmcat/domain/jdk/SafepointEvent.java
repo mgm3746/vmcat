@@ -21,8 +21,8 @@ import org.github.vmcat.domain.LogEvent;
 import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
-import org.github.vmcat.util.jdk.JdkUtil.TriggerType;
 import org.github.vmcat.util.jdk.Trigger;
+import org.github.vmcat.util.jdk.Trigger.TriggerType;
 
 /**
  * <p>
@@ -33,19 +33,22 @@ import org.github.vmcat.util.jdk.Trigger;
  * All threads in the JVM are stopped.
  * </p>
  * 
- * <p>
- * Referenences:
- * </p>
- * 
- * <ul>
- * <li><a href=
- * "http://hg.openjdk.java.net/jdk8/jdk8/hotspot/file/87ee5ee27509/src/share/vm/runtime/vm_operations.hpp">JDK8</a>.</li>
- * </ul>
- * 
  * <h3>Example Logging</h3>
+ * 
+ * <p>
+ * JDK8:
+ * </p>
  * 
  * <pre>
  * 1652.991: RevokeBias                       [    2403          0             13    ]      [     0     0     2    29     0    ]  0
+ * </pre>
+ * 
+ * <p>
+ * JDK11:
+ * </p>
+ * 
+ * <pre>
+ *    0.562: GenCollectForAllocation         [                 9                 0             0 ][             0       0       0       0       0 ]               0
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
@@ -55,18 +58,22 @@ public class SafepointEvent implements LogEvent {
     /**
      * Trigger(s) regular expression(s).
      */
-    private static final String TRIGGER = "(" + Trigger.BULK_REVOKE_BIAS + "|" + Trigger.COLLECT_FOR_METADATA_ALLOCATION
-            + "|" + Trigger.DEOPTIMIZE + "|" + Trigger.ENABLE_BIASED_LOCKING + "|" + Trigger.FIND_DEADLOCKS + "|"
-            + Trigger.FORCE_SAFEPOINT + "|" + Trigger.FORCE_SAFEPOINT + "|" + Trigger.GEN_COLLECT_FOR_ALLOCATION + "|"
-            + Trigger.NO_VM_OPERATION + "|" + Trigger.PARALLEL_GC_FAILED_ALLOCATION + "|"
-            + Trigger.PARALLEL_GC_SYSTEM_GC + "|" + Trigger.PRINT_JNI + "|" + Trigger.PRINT_THREADS + "|"
-            + Trigger.REVOKE_BIAS + "|" + Trigger.THREAD_DUMP + ")";
+    public static final String TRIGGER = "(" + Trigger.BULK_REVOKE_BIAS + "|" + Trigger.CMS_FINAL_REMARK + "|"
+            + Trigger.CMS_INITIAL_MARK + "|" + Trigger.COLLECT_FOR_METADATA_ALLOCATION + "|" + Trigger.DEOPTIMIZE + "|"
+            + Trigger.ENABLE_BIASED_LOCKING + "|" + Trigger.FIND_DEADLOCKS + "|" + Trigger.FORCE_SAFEPOINT + "|"
+            + Trigger.FORCE_SAFEPOINT + "|" + Trigger.G1_COLLECT_FOR_ALLOCATION + "|" + Trigger.G1_INC_COLLECTION_PAUSE
+            + "|" + Trigger.CGC_OPERATION + "|" + Trigger.GEN_COLLECT_FOR_ALLOCATION + "|" + Trigger.NO_VM_OPERATION
+            + "|" + Trigger.PARALLEL_GC_FAILED_ALLOCATION + "|" + Trigger.PARALLEL_GC_SYSTEM_GC + "|"
+            + Trigger.PRINT_JNI + "|" + Trigger.PRINT_THREADS + "|" + Trigger.REVOKE_BIAS + "|"
+            + Trigger.SHENANDOAH_DEGENERATED_GC + "|" + Trigger.SHENANDOAH_FINAL_MARK_START_EVAC + "|"
+            + Trigger.SHENANDOAH_FINAL_UPDATE_REFS + "|" + Trigger.SHENANDOAH_INIT_MARK + "|"
+            + Trigger.SHENANDOAH_INIT_UPDATE_REFS + "|" + Trigger.THREAD_DUMP + ")";
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^" + JdkRegEx.DECORATOR + " " + TRIGGER + "[ ]{1,25}" + JdkRegEx.THREAD_BLOCK
-            + "[ ]{6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2}" + JdkRegEx.NUMBER + "[ ]*$";
+    private static final String REGEX = "^[ ]{0,3}" + JdkRegEx.DECORATOR + " " + TRIGGER + "[ ]{1,25}"
+            + JdkRegEx.THREAD_BLOCK + "[ ]{0,6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2,15}" + JdkRegEx.NUMBER + "[ ]*$";
 
     private static Pattern pattern = Pattern.compile(REGEX);
 
@@ -76,7 +83,7 @@ public class SafepointEvent implements LogEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -143,33 +150,53 @@ public class SafepointEvent implements LogEvent {
             timestamp = JdkMath.convertSecsToMillis(matcher.group(12)).longValue();
             String trigger = matcher.group(13);
             if (trigger.equals(Trigger.BULK_REVOKE_BIAS)) {
-                triggerType = JdkUtil.TriggerType.BULK_REVOKE_BIAS;
+                triggerType = Trigger.TriggerType.BULK_REVOKE_BIAS;
+            } else if (trigger.equals(Trigger.CMS_FINAL_REMARK)) {
+                triggerType = Trigger.TriggerType.CMS_FINAL_REMARK;
+            } else if (trigger.equals(Trigger.CMS_INITIAL_MARK)) {
+                triggerType = Trigger.TriggerType.CMS_INITIAL_MARK;
             } else if (trigger.equals(Trigger.COLLECT_FOR_METADATA_ALLOCATION)) {
-                triggerType = JdkUtil.TriggerType.COLLECT_FOR_METADATA_ALLOCATION;
+                triggerType = Trigger.TriggerType.COLLECT_FOR_METADATA_ALLOCATION;
             } else if (trigger.equals(Trigger.DEOPTIMIZE)) {
-                triggerType = JdkUtil.TriggerType.DEOPTIMIZE;
+                triggerType = Trigger.TriggerType.DEOPTIMIZE;
             } else if (trigger.equals(Trigger.ENABLE_BIASED_LOCKING)) {
-                triggerType = JdkUtil.TriggerType.ENABLE_BIASED_LOCKING;
+                triggerType = Trigger.TriggerType.ENABLE_BIASED_LOCKING;
             } else if (trigger.equals(Trigger.FIND_DEADLOCKS)) {
-                triggerType = JdkUtil.TriggerType.FIND_DEADLOCKS;
+                triggerType = Trigger.TriggerType.FIND_DEADLOCKS;
+            } else if (trigger.equals(Trigger.G1_COLLECT_FOR_ALLOCATION)) {
+                triggerType = Trigger.TriggerType.G1_COLLECT_FOR_ALLOCATION;
             } else if (trigger.equals(Trigger.FORCE_SAFEPOINT)) {
-                triggerType = JdkUtil.TriggerType.FORCE_SAFEPOINT;
+                triggerType = Trigger.TriggerType.FORCE_SAFEPOINT;
+            } else if (trigger.equals(Trigger.G1_INC_COLLECTION_PAUSE)) {
+                triggerType = Trigger.TriggerType.G1_INC_COLLECTION_PAUSE;
+            } else if (trigger.equals(Trigger.CGC_OPERATION)) {
+                triggerType = Trigger.TriggerType.CGC_OPERATION;
             } else if (trigger.equals(Trigger.GEN_COLLECT_FOR_ALLOCATION)) {
-                triggerType = JdkUtil.TriggerType.GEN_COLLECT_FOR_ALLOCATION;
+                triggerType = Trigger.TriggerType.GEN_COLLECT_FOR_ALLOCATION;
             } else if (trigger.equals(Trigger.NO_VM_OPERATION)) {
-                triggerType = JdkUtil.TriggerType.NO_VM_OPERATION;
+                triggerType = Trigger.TriggerType.NO_VM_OPERATION;
             } else if (trigger.equals(Trigger.PARALLEL_GC_FAILED_ALLOCATION)) {
-                triggerType = JdkUtil.TriggerType.PARALLEL_GC_FAILED_ALLOCATION;
+                triggerType = Trigger.TriggerType.PARALLEL_GC_FAILED_ALLOCATION;
             } else if (trigger.equals(Trigger.PARALLEL_GC_SYSTEM_GC)) {
-                triggerType = JdkUtil.TriggerType.PARALLEL_GC_SYSTEM_GC;
+                triggerType = Trigger.TriggerType.PARALLEL_GC_SYSTEM_GC;
             } else if (trigger.equals(Trigger.PRINT_JNI)) {
-                triggerType = JdkUtil.TriggerType.PRINT_JNI;
+                triggerType = Trigger.TriggerType.PRINT_JNI;
             } else if (trigger.equals(Trigger.PRINT_THREADS)) {
-                triggerType = JdkUtil.TriggerType.PRINT_THREADS;
+                triggerType = Trigger.TriggerType.PRINT_THREADS;
             } else if (trigger.equals(Trigger.REVOKE_BIAS)) {
-                triggerType = JdkUtil.TriggerType.REVOKE_BIAS;
+                triggerType = Trigger.TriggerType.REVOKE_BIAS;
+            } else if (trigger.equals(Trigger.SHENANDOAH_DEGENERATED_GC)) {
+                triggerType = Trigger.TriggerType.SHENANDOAH_DEGENERATED_GC;
+            } else if (trigger.equals(Trigger.SHENANDOAH_FINAL_MARK_START_EVAC)) {
+                triggerType = Trigger.TriggerType.SHENANDOAH_FINAL_MARK_START_EVAC;
+            } else if (trigger.equals(Trigger.SHENANDOAH_FINAL_UPDATE_REFS)) {
+                triggerType = Trigger.TriggerType.SHENANDOAH_FINAL_UPDATE_REFS;
+            } else if (trigger.equals(Trigger.SHENANDOAH_INIT_MARK)) {
+                triggerType = Trigger.TriggerType.SHENANDOAH_INIT_MARK;
+            } else if (trigger.equals(Trigger.SHENANDOAH_INIT_UPDATE_REFS)) {
+                triggerType = Trigger.TriggerType.SHENANDOAH_INIT_UPDATE_REFS;
             } else if (trigger.equals(Trigger.THREAD_DUMP)) {
-                triggerType = JdkUtil.TriggerType.THREAD_DUMP;
+                triggerType = Trigger.TriggerType.THREAD_DUMP;
             }
             threadsTotal = Integer.parseInt(matcher.group(14));
             threadsSpinning = Integer.parseInt(matcher.group(15));

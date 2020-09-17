@@ -15,33 +15,31 @@
 package org.github.vmcat.domain.jdk;
 
 import org.github.vmcat.domain.TagEvent;
-import org.github.vmcat.domain.ThrowAwayEvent;
+import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_VM_VERSION_RELEASE
+ * TAG_TTY_DONE
  * </p>
  * 
  * <p>
- * vm_version release tag.
+ * tty_done tag.
  * </p>
  * 
  * <pre>
- * &lt;release&gt;
- * 25.242-b08-debug
- * &lt;/release&gt;
+ * &lt;tty_done stamp='47.961'/&gt;
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmVersionReleaseEvent implements TagEvent, ThrowAwayEvent {
+public class TagTtyDoneEvent implements TagEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^<(/)?release>$";
+    private static final String REGEX = "^<tty_done stamp='" + JdkRegEx.TIMESTAMP + "'/>$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -49,7 +47,7 @@ public class TagVmVersionReleaseEvent implements TagEvent, ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -59,7 +57,7 @@ public class TagVmVersionReleaseEvent implements TagEvent, ThrowAwayEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagVmVersionReleaseEvent(String logEntry) {
+    public TagTtyDoneEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -69,7 +67,7 @@ public class TagVmVersionReleaseEvent implements TagEvent, ThrowAwayEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_VERSION_RELEASE.toString();
+        return JdkUtil.LogEventType.TAG_TTY_DONE.toString();
     }
 
     public long getTimestamp() {

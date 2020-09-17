@@ -25,22 +25,25 @@ import org.github.vmcat.domain.BlankLineEvent;
 import org.github.vmcat.domain.LogEvent;
 import org.github.vmcat.domain.TimeWarpException;
 import org.github.vmcat.domain.UnknownEvent;
+import org.github.vmcat.domain.jdk.FooterStatsEvent;
 import org.github.vmcat.domain.jdk.HeaderEvent;
 import org.github.vmcat.domain.jdk.SafepointEvent;
+import org.github.vmcat.domain.jdk.TagArgsEvent;
 import org.github.vmcat.domain.jdk.TagBlobEvent;
-import org.github.vmcat.domain.jdk.TagBlobSectEvent;
+import org.github.vmcat.domain.jdk.TagCommandEvent;
 import org.github.vmcat.domain.jdk.TagDependencyFailedEvent;
+import org.github.vmcat.domain.jdk.TagDestroyVmEvent;
 import org.github.vmcat.domain.jdk.TagHotspotLogEvent;
+import org.github.vmcat.domain.jdk.TagInfoEvent;
+import org.github.vmcat.domain.jdk.TagLauncherEvent;
+import org.github.vmcat.domain.jdk.TagNameEvent;
+import org.github.vmcat.domain.jdk.TagPropertiesEvent;
+import org.github.vmcat.domain.jdk.TagReleaseEvent;
+import org.github.vmcat.domain.jdk.TagSectEvent;
+import org.github.vmcat.domain.jdk.TagTtyDoneEvent;
 import org.github.vmcat.domain.jdk.TagTtyEvent;
-import org.github.vmcat.domain.jdk.TagVmArgumentsArgsEvent;
-import org.github.vmcat.domain.jdk.TagVmArgumentsCommandEvent;
 import org.github.vmcat.domain.jdk.TagVmArgumentsEvent;
-import org.github.vmcat.domain.jdk.TagVmArgumentsLauncherEvent;
-import org.github.vmcat.domain.jdk.TagVmArgumentsPropertiesEvent;
 import org.github.vmcat.domain.jdk.TagVmVersionEvent;
-import org.github.vmcat.domain.jdk.TagVmVersionInfoEvent;
-import org.github.vmcat.domain.jdk.TagVmVersionNameEvent;
-import org.github.vmcat.domain.jdk.TagVmVersionReleaseEvent;
 import org.github.vmcat.domain.jdk.TagWriterEvent;
 import org.github.vmcat.domain.jdk.TagXmlEvent;
 import org.github.vmcat.util.Constants;
@@ -61,28 +64,15 @@ public class JdkUtil {
      */
     public enum LogEventType {
         //
-        BLANK_LINE, HEADER, SAFEPOINT, TAG_BLOB, TAG_BLOB_SECT, TAG_DEPENDENCY_FAILED, TAG_HOTSPOT_LOG, TAG_TTY,
+        BLANK_LINE, FOOTER_STATS, HEADER, SAFEPOINT, TAG_ARGS, TAG_BLOB, TAG_COMMAND, TAG_DEPENDENCY_FAILED,
         //
-        TAG_VM_ARGUMENTS, TAG_VM_ARGUMENTS_ARGS, TAG_VM_ARGUMENTS_COMMAND, TAG_VM_ARGUMENTS_LAUNCHER,
+        TAG_DESTROY_VM, TAG_HOTSPOT_LOG, TAG_INFO, TAG_LAUNCHER, TAG_NAME, TAG_PROPERTIES, TAG_RELEASE, TAG_SECT,
         //
-        TAG_VM_ARGUMENTS_PROPERTIES, TAG_VM_VERSION, TAG_VM_VERSION_INFO, TAG_VM_VERSION_NAME, TAG_VM_VERSION_RELEASE,
-        //
-        TAG_WRITER, TAG_XML, UNKNOWN
+        TAG_TTY, TAG_TTY_DONE, TAG_VM_ARGUMENTS, TAG_VM_VERSION, TAG_WRITER, TAG_XML, UNKNOWN
     };
 
     /**
-     * Defined triggers.
-     */
-    public enum TriggerType {
-        BULK_REVOKE_BIAS, COLLECT_FOR_METADATA_ALLOCATION, DEOPTIMIZE, ENABLE_BIASED_LOCKING, FIND_DEADLOCKS,
-        //
-        FORCE_SAFEPOINT, GEN_COLLECT_FOR_ALLOCATION, NO_VM_OPERATION, PARALLEL_GC_FAILED_ALLOCATION,
-        //
-        PARALLEL_GC_SYSTEM_GC, PRINT_JNI, PRINT_THREADS, REVOKE_BIAS, THREAD_DUMP, UNKNOWN
-    };
-
-    /**
-     * Create <code>LogEvent</code> from GC log line.
+     * Create <code>LogEvent</code> from VM log line.
      * 
      * @param logLine
      *            The log line as it appears in the VM log.
@@ -96,6 +86,9 @@ public class JdkUtil {
         case BLANK_LINE:
             event = new BlankLineEvent(logLine);
             break;
+        case FOOTER_STATS:
+            event = new FooterStatsEvent(logLine);
+            break;
         case HEADER:
             event = new HeaderEvent(logLine);
             break;
@@ -105,11 +98,14 @@ public class JdkUtil {
         case TAG_BLOB:
             event = new TagBlobEvent(logLine);
             break;
-        case TAG_BLOB_SECT:
-            event = new TagBlobSectEvent(logLine);
+        case TAG_SECT:
+            event = new TagSectEvent(logLine);
             break;
         case TAG_DEPENDENCY_FAILED:
             event = new TagDependencyFailedEvent(logLine);
+            break;
+        case TAG_DESTROY_VM:
+            event = new TagDestroyVmEvent(logLine);
             break;
         case TAG_HOTSPOT_LOG:
             event = new TagHotspotLogEvent(logLine);
@@ -117,32 +113,35 @@ public class JdkUtil {
         case TAG_TTY:
             event = new TagTtyEvent(logLine);
             break;
+        case TAG_TTY_DONE:
+            event = new TagTtyDoneEvent(logLine);
+            break;
         case TAG_VM_ARGUMENTS:
             event = new TagVmArgumentsEvent(logLine);
             break;
-        case TAG_VM_ARGUMENTS_ARGS:
-            event = new TagVmArgumentsArgsEvent(logLine);
+        case TAG_ARGS:
+            event = new TagArgsEvent(logLine);
             break;
-        case TAG_VM_ARGUMENTS_COMMAND:
-            event = new TagVmArgumentsCommandEvent(logLine);
+        case TAG_COMMAND:
+            event = new TagCommandEvent(logLine);
             break;
-        case TAG_VM_ARGUMENTS_LAUNCHER:
-            event = new TagVmArgumentsLauncherEvent(logLine);
+        case TAG_LAUNCHER:
+            event = new TagLauncherEvent(logLine);
             break;
-        case TAG_VM_ARGUMENTS_PROPERTIES:
-            event = new TagVmArgumentsPropertiesEvent(logLine);
+        case TAG_PROPERTIES:
+            event = new TagPropertiesEvent(logLine);
             break;
         case TAG_VM_VERSION:
             event = new TagVmVersionEvent(logLine);
             break;
-        case TAG_VM_VERSION_INFO:
-            event = new TagVmVersionInfoEvent(logLine);
+        case TAG_INFO:
+            event = new TagInfoEvent(logLine);
             break;
-        case TAG_VM_VERSION_NAME:
-            event = new TagVmVersionNameEvent(logLine);
+        case TAG_NAME:
+            event = new TagNameEvent(logLine);
             break;
-        case TAG_VM_VERSION_RELEASE:
-            event = new TagVmVersionReleaseEvent(logLine);
+        case TAG_RELEASE:
+            event = new TagReleaseEvent(logLine);
             break;
         case TAG_WRITER:
             event = new TagWriterEvent(logLine);
@@ -170,38 +169,44 @@ public class JdkUtil {
     public static final LogEventType identifyEventType(String logLine) {
         if (BlankLineEvent.match(logLine))
             return LogEventType.BLANK_LINE;
+        if (FooterStatsEvent.match(logLine))
+            return LogEventType.FOOTER_STATS;
         if (HeaderEvent.match(logLine))
             return LogEventType.HEADER;
         if (SafepointEvent.match(logLine))
             return LogEventType.SAFEPOINT;
         if (TagBlobEvent.match(logLine))
             return LogEventType.TAG_BLOB;
-        if (TagBlobSectEvent.match(logLine))
-            return LogEventType.TAG_BLOB_SECT;
+        if (TagSectEvent.match(logLine))
+            return LogEventType.TAG_SECT;
         if (TagDependencyFailedEvent.match(logLine))
             return LogEventType.TAG_DEPENDENCY_FAILED;
+        if (TagDestroyVmEvent.match(logLine))
+            return LogEventType.TAG_DESTROY_VM;
         if (TagHotspotLogEvent.match(logLine))
             return LogEventType.TAG_HOTSPOT_LOG;
         if (TagTtyEvent.match(logLine))
             return LogEventType.TAG_TTY;
+        if (TagTtyDoneEvent.match(logLine))
+            return LogEventType.TAG_TTY_DONE;
         if (TagVmArgumentsEvent.match(logLine))
             return LogEventType.TAG_VM_ARGUMENTS;
-        if (TagVmArgumentsArgsEvent.match(logLine))
-            return LogEventType.TAG_VM_ARGUMENTS_ARGS;
-        if (TagVmArgumentsCommandEvent.match(logLine))
-            return LogEventType.TAG_VM_ARGUMENTS_COMMAND;
-        if (TagVmArgumentsLauncherEvent.match(logLine))
-            return LogEventType.TAG_VM_ARGUMENTS_LAUNCHER;
-        if (TagVmArgumentsPropertiesEvent.match(logLine))
-            return LogEventType.TAG_VM_ARGUMENTS_PROPERTIES;
+        if (TagArgsEvent.match(logLine))
+            return LogEventType.TAG_ARGS;
+        if (TagCommandEvent.match(logLine))
+            return LogEventType.TAG_COMMAND;
+        if (TagLauncherEvent.match(logLine))
+            return LogEventType.TAG_LAUNCHER;
+        if (TagPropertiesEvent.match(logLine))
+            return LogEventType.TAG_PROPERTIES;
         if (TagVmVersionEvent.match(logLine))
             return LogEventType.TAG_VM_VERSION;
-        if (TagVmVersionInfoEvent.match(logLine))
-            return LogEventType.TAG_VM_VERSION_INFO;
-        if (TagVmVersionNameEvent.match(logLine))
-            return LogEventType.TAG_VM_VERSION_NAME;
-        if (TagVmVersionReleaseEvent.match(logLine))
-            return LogEventType.TAG_VM_VERSION_RELEASE;
+        if (TagInfoEvent.match(logLine))
+            return LogEventType.TAG_INFO;
+        if (TagNameEvent.match(logLine))
+            return LogEventType.TAG_NAME;
+        if (TagReleaseEvent.match(logLine))
+            return LogEventType.TAG_RELEASE;
         if (TagWriterEvent.match(logLine))
             return LogEventType.TAG_WRITER;
         if (TagXmlEvent.match(logLine))
@@ -209,107 +214,6 @@ public class JdkUtil {
 
         // no idea what event is
         return LogEventType.UNKNOWN;
-    }
-
-    /**
-     * Identify the safepoint trigger.
-     * 
-     * @param trigger
-     *            The trigger.
-     * @return The <code>TriggerType</code>.
-     */
-    public static final TriggerType identifyTriggerType(String trigger) {
-        if (TriggerType.BULK_REVOKE_BIAS.toString().matches(trigger))
-            return TriggerType.BULK_REVOKE_BIAS;
-        if (TriggerType.COLLECT_FOR_METADATA_ALLOCATION.toString().matches(trigger))
-            return TriggerType.COLLECT_FOR_METADATA_ALLOCATION;
-        if (TriggerType.DEOPTIMIZE.toString().matches(trigger))
-            return TriggerType.DEOPTIMIZE;
-        if (TriggerType.ENABLE_BIASED_LOCKING.toString().matches(trigger))
-            return TriggerType.ENABLE_BIASED_LOCKING;
-        if (TriggerType.FIND_DEADLOCKS.toString().matches(trigger))
-            return TriggerType.FIND_DEADLOCKS;
-        if (TriggerType.FORCE_SAFEPOINT.toString().matches(trigger))
-            return TriggerType.FORCE_SAFEPOINT;
-        if (TriggerType.GEN_COLLECT_FOR_ALLOCATION.toString().matches(trigger))
-            return TriggerType.GEN_COLLECT_FOR_ALLOCATION;
-        if (TriggerType.NO_VM_OPERATION.toString().matches(trigger))
-            return TriggerType.NO_VM_OPERATION;
-        if (TriggerType.PARALLEL_GC_FAILED_ALLOCATION.toString().matches(trigger))
-            return TriggerType.PARALLEL_GC_FAILED_ALLOCATION;
-        if (TriggerType.PARALLEL_GC_SYSTEM_GC.toString().matches(trigger))
-            return TriggerType.PARALLEL_GC_SYSTEM_GC;
-        if (TriggerType.PRINT_JNI.toString().matches(trigger))
-            return TriggerType.PRINT_JNI;
-        if (TriggerType.PRINT_THREADS.toString().matches(trigger))
-            return TriggerType.PRINT_THREADS;
-        if (TriggerType.REVOKE_BIAS.toString().matches(trigger))
-            return TriggerType.REVOKE_BIAS;
-        if (TriggerType.THREAD_DUMP.toString().matches(trigger))
-            return TriggerType.THREAD_DUMP;
-
-        // no idea what trigger is
-        return TriggerType.UNKNOWN;
-    }
-
-    /**
-     * Get <code>TriggerType</code> vm log literal.
-     * 
-     * @param triggerType
-     *            The trigger type.
-     * @return The trigger literal in the vm log line.
-     */
-    public static final String getTriggerLiteral(TriggerType triggerType) {
-        String triggerLiteral = null;
-        switch (triggerType) {
-
-        case BULK_REVOKE_BIAS:
-            triggerLiteral = Trigger.BULK_REVOKE_BIAS;
-            break;
-        case COLLECT_FOR_METADATA_ALLOCATION:
-            triggerLiteral = Trigger.COLLECT_FOR_METADATA_ALLOCATION;
-            break;
-        case DEOPTIMIZE:
-            triggerLiteral = Trigger.DEOPTIMIZE;
-            break;
-        case ENABLE_BIASED_LOCKING:
-            triggerLiteral = Trigger.ENABLE_BIASED_LOCKING;
-            break;
-        case FIND_DEADLOCKS:
-            triggerLiteral = Trigger.FIND_DEADLOCKS;
-            break;
-        case FORCE_SAFEPOINT:
-            triggerLiteral = Trigger.FORCE_SAFEPOINT;
-            break;
-        case GEN_COLLECT_FOR_ALLOCATION:
-            triggerLiteral = Trigger.GEN_COLLECT_FOR_ALLOCATION;
-            break;
-        case NO_VM_OPERATION:
-            triggerLiteral = Trigger.NO_VM_OPERATION;
-            break;
-        case PARALLEL_GC_FAILED_ALLOCATION:
-            triggerLiteral = Trigger.PARALLEL_GC_FAILED_ALLOCATION;
-            break;
-        case PARALLEL_GC_SYSTEM_GC:
-            triggerLiteral = Trigger.PARALLEL_GC_SYSTEM_GC;
-            break;
-        case PRINT_JNI:
-            triggerLiteral = Trigger.PRINT_JNI;
-            break;
-        case PRINT_THREADS:
-            triggerLiteral = Trigger.PRINT_THREADS;
-            break;
-        case REVOKE_BIAS:
-            triggerLiteral = Trigger.REVOKE_BIAS;
-            break;
-        case THREAD_DUMP:
-            triggerLiteral = Trigger.THREAD_DUMP;
-            break;
-
-        default:
-            throw new AssertionError("Unexpected trigger type value: " + triggerType);
-        }
-        return triggerLiteral;
     }
 
     /**
@@ -345,21 +249,24 @@ public class JdkUtil {
 
         switch (eventType) {
         case BLANK_LINE:
+        case FOOTER_STATS:
         case HEADER:
+        case TAG_ARGS:
         case TAG_BLOB:
-        case TAG_BLOB_SECT:
+        case TAG_COMMAND:
         case TAG_DEPENDENCY_FAILED:
+        case TAG_DESTROY_VM:
         case TAG_HOTSPOT_LOG:
+        case TAG_INFO:
+        case TAG_LAUNCHER:
+        case TAG_NAME:
+        case TAG_PROPERTIES:
+        case TAG_RELEASE:
+        case TAG_SECT:
         case TAG_TTY:
+        case TAG_TTY_DONE:
         case TAG_VM_ARGUMENTS:
-        case TAG_VM_ARGUMENTS_ARGS:
-        case TAG_VM_ARGUMENTS_COMMAND:
-        case TAG_VM_ARGUMENTS_LAUNCHER:
-        case TAG_VM_ARGUMENTS_PROPERTIES:
         case TAG_VM_VERSION:
-        case TAG_VM_VERSION_INFO:
-        case TAG_VM_VERSION_NAME:
-        case TAG_VM_VERSION_RELEASE:
         case TAG_WRITER:
         case TAG_XML:
         case UNKNOWN:
@@ -398,10 +305,9 @@ public class JdkUtil {
      */
     public static final boolean isBottleneck(SafepointEvent currentSafepointEvent,
             SafepointEvent previouseSafepointEvent, int throughputThreshold) throws TimeWarpException {
-
         /*
-         * Current event should not start until prior even finishes. Allow 1 thousandth of a second overlap to account,
-         * DEOPTIMIZE, ENABLE_BIASED_LOCKING, REVOKE_BIAS for precision and rounding limitations.
+         * Current event should not start until prior even finishes. Allow 1/1000 of a second overlap to account for
+         * precision and rounding limitations.
          */
         if (currentSafepointEvent.getTimestamp() < (previouseSafepointEvent.getTimestamp()
                 + previouseSafepointEvent.getDuration() - 1)) {
@@ -411,8 +317,8 @@ public class JdkUtil {
         }
 
         /*
-         * Timestamp is the start of a garbage collection event; therefore, the interval is from the end of the prior
-         * event to the end of the current event.
+         * Timestamp is the start of a vm event; therefore, the interval is from the end of the prior event to the end
+         * of the current event.
          */
         long interval = currentSafepointEvent.getTimestamp() + currentSafepointEvent.getDuration()
                 - previouseSafepointEvent.getTimestamp() - previouseSafepointEvent.getDuration();
@@ -422,8 +328,7 @@ public class JdkUtil {
                             + Constants.LINE_SEPARATOR + currentSafepointEvent.getLogEntry());
         }
 
-        // Determine the maximum duration for the given interval that meets the
-        // throughput goal.
+        // Determine the maximum duration for the given interval that meets the throughput goal.
         BigDecimal durationThreshold = new BigDecimal(100 - throughputThreshold);
         durationThreshold = durationThreshold.movePointLeft(2);
         durationThreshold = durationThreshold.multiply(new BigDecimal(interval));

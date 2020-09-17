@@ -20,7 +20,7 @@ import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_VM_ARGUMENTS_LAUNCHER
+ * TAG_LAUNCHER
  * </p>
  * 
  * <p>
@@ -36,7 +36,7 @@ import org.github.vmcat.util.jdk.JdkUtil;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmArgumentsLauncherEvent implements TagEvent, ThrowAwayEvent {
+public class TagLauncherEvent implements TagEvent, ThrowAwayEvent {
 
     /**
      * Regular expression defining the logging.
@@ -49,7 +49,7 @@ public class TagVmArgumentsLauncherEvent implements TagEvent, ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -59,7 +59,7 @@ public class TagVmArgumentsLauncherEvent implements TagEvent, ThrowAwayEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagVmArgumentsLauncherEvent(String logEntry) {
+    public TagLauncherEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -69,7 +69,7 @@ public class TagVmArgumentsLauncherEvent implements TagEvent, ThrowAwayEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_ARGUMENTS_LAUNCHER.toString();
+        return JdkUtil.LogEventType.TAG_LAUNCHER.toString();
     }
 
     public long getTimestamp() {

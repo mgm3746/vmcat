@@ -50,6 +50,7 @@ import org.github.vmcat.util.Constants;
 import org.github.vmcat.util.jdk.Analysis;
 import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkUtil;
+import org.github.vmcat.util.jdk.Trigger;
 import org.json.JSONObject;
 
 /**
@@ -399,7 +400,7 @@ public class Main {
                     } else {
                         pauseMaxString = pauseMax.toString();
                     }
-                    printWriter.printf("%-30s%10s%12s%6s%%%12s%n", JdkUtil.getTriggerLiteral(summary.getTriggerType()),
+                    printWriter.printf("%-30s%10s%12s%6s%%%12s%n", Trigger.getTriggerLiteral(summary.getTriggerType()),
                             summary.getCount(), pauseTotalString, percentString, pauseMaxString);
                 }
             }

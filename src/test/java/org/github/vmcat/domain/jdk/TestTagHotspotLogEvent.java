@@ -42,4 +42,10 @@ public class TestTagHotspotLogEvent extends TestCase {
         Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_HOTSPOT_LOG.toString() + ".",
                 TagHotspotLogEvent.match(logLine));
     }
+
+    public void testLogLineEndTag() {
+        String logLine = "</hotspot_log>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_HOTSPOT_LOG.toString() + ".",
+                TagHotspotLogEvent.match(logLine));
+    }
 }

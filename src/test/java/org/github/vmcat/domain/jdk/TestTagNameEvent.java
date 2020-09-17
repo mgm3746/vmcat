@@ -30,45 +30,42 @@ import junit.framework.TestCase;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TestTagVmVersionInfoEvent extends TestCase {
+public class TestTagNameEvent extends TestCase {
 
     public void testParseLogLine() {
-        String logLine = "<info>";
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_VERSION_INFO.toString() + " not parsed.",
-                JdkUtil.parseLogLine(logLine) instanceof TagVmVersionInfoEvent);
+        String logLine = "<name>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_NAME.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagNameEvent);
     }
 
     public void testReportable() {
-        String logLine = "<info>";
-        Assert.assertFalse(
-                JdkUtil.LogEventType.TAG_VM_VERSION_INFO.toString() + " incorrectly indentified as reportable.",
+        String logLine = "<name>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_NAME.toString() + " incorrectly indentified as reportable.",
                 JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
     public void testLogLine() {
-        String logLine = "<info>";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_VERSION_INFO.toString() + ".",
-                TagVmVersionInfoEvent.match(logLine));
+        String logLine = "<name>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_NAME.toString() + ".",
+                TagNameEvent.match(logLine));
     }
 
     public void testLogLineEndTag() {
-        String logLine = "</info>";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_VERSION_INFO.toString() + ".",
-                TagVmVersionInfoEvent.match(logLine));
+        String logLine = "</name>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_NAME.toString() + ".",
+                TagNameEvent.match(logLine));
     }
 
-    public void testVersionInfoBlock() {
-        File testFile = new File(Constants.TEST_DATA_DIR + "dataset4.txt");
+    public void testVersionNameBlock() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset2.txt");
         Manager manager = new Manager();
         manager.store(testFile);
         JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " vent identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_VERSION_INFO.toString() + " not identified.",
-                jvmRun.getEventTypes().contains(LogEventType.TAG_VM_VERSION_INFO));
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_NAME.toString() + " not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.TAG_NAME));
         Assert.assertEquals("Event type count not correct.", 1, jvmRun.getEventTypes().size());
-        String version = "OpenJDK 64-Bit Server VM (25.242-b08-debug) for linux-amd64 JRE (1.8.0_242-b08), built on "
-                + "Jan 15 2020 17:24:19 by &quot;mockbuild&quot; with gcc 4.8.5 20150623 (Red Hat 4.8.5-39)";
-        Assert.assertEquals("JDK version not correct.", version, jvmRun.getJvm().getVersion());
+
     }
 }

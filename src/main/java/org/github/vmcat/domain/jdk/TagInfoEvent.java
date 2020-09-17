@@ -15,33 +15,32 @@
 package org.github.vmcat.domain.jdk;
 
 import org.github.vmcat.domain.TagEvent;
-import org.github.vmcat.domain.ThrowAwayEvent;
 import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_VM_VERSION_NAME
+ * TAG_INFO
  * </p>
  * 
  * <p>
- * vm_version name tag.
+ * name tag.
  * </p>
  * 
  * <pre>
- * &lt;name&gt;
- * OpenJDK 64-Bit Server VM
- * &lt;/name&gt;
+ * &lt;info&gt;
+ * OpenJDK 64-Bit Server VM (25.242-b08-debug) for linux-amd64 JRE (1.8.0_242-b08), built on Jan 15 2020 17:24:19 by &quot;mockbuild&quot; with gcc 4.8.5 20150623 (Red Hat 4.8.5-39)
+ * &lt;/info&gt;
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmVersionNameEvent implements TagEvent, ThrowAwayEvent {
+public class TagInfoEvent implements TagEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^<(/)?name>$";
+    private static final String REGEX = "^<(/)?info>$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -49,7 +48,7 @@ public class TagVmVersionNameEvent implements TagEvent, ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -59,7 +58,7 @@ public class TagVmVersionNameEvent implements TagEvent, ThrowAwayEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagVmVersionNameEvent(String logEntry) {
+    public TagInfoEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -69,7 +68,7 @@ public class TagVmVersionNameEvent implements TagEvent, ThrowAwayEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_VERSION_NAME.toString();
+        return JdkUtil.LogEventType.TAG_INFO.toString();
     }
 
     public long getTimestamp() {

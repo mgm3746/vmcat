@@ -190,10 +190,10 @@ public class TestVmUtil extends TestCase {
 
     public void testAddingDateWith2DigitMonth() {
         String jvmStarted = "2009-11-01 02:30:52,917";
-        long gcLogTimestamp = 353647157L;
+        long vmLogTimestamp = 353647157L;
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
         Assert.assertEquals("Date calculated wrong.", "2009-11-05 04:45:00,074",
-                formatter.format(VmUtil.getDatePlusTimestamp(VmUtil.parseStartDateTime(jvmStarted), gcLogTimestamp)));
+                formatter.format(VmUtil.getDatePlusTimestamp(VmUtil.parseStartDateTime(jvmStarted), vmLogTimestamp)));
     }
 
     public void testGetPropertyValues() {

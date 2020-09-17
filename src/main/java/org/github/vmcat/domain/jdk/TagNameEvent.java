@@ -20,28 +20,28 @@ import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_VM_ARGUMENTS_COMMAND
+ * TAG_NAME
  * </p>
  * 
  * <p>
- * vm_arguments command tag.
+ * vm_version name tag.
  * </p>
  * 
  * <pre>
- * &lt;command&gt;
- * org.apache.karaf.main.Main
- * &lt;/command&gt;
+ * &lt;name&gt;
+ * OpenJDK 64-Bit Server VM
+ * &lt;/name&gt;
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmArgumentsCommandEvent implements TagEvent, ThrowAwayEvent {
+public class TagNameEvent implements TagEvent, ThrowAwayEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^<(/)?command>$";
+    private static final String REGEX = "^<(/)?name>$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -49,7 +49,7 @@ public class TagVmArgumentsCommandEvent implements TagEvent, ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -59,7 +59,7 @@ public class TagVmArgumentsCommandEvent implements TagEvent, ThrowAwayEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagVmArgumentsCommandEvent(String logEntry) {
+    public TagNameEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -69,7 +69,7 @@ public class TagVmArgumentsCommandEvent implements TagEvent, ThrowAwayEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_ARGUMENTS_COMMAND.toString();
+        return JdkUtil.LogEventType.TAG_NAME.toString();
     }
 
     public long getTimestamp() {

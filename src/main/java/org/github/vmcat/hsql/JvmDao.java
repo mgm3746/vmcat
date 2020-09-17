@@ -28,7 +28,8 @@ import org.github.vmcat.domain.jdk.SafepointEventSummary;
 import org.github.vmcat.util.jdk.Analysis;
 import org.github.vmcat.util.jdk.JdkUtil;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
-import org.github.vmcat.util.jdk.JdkUtil.TriggerType;
+import org.github.vmcat.util.jdk.Trigger;
+import org.github.vmcat.util.jdk.Trigger.TriggerType;
 
 /**
  * <p>
@@ -557,7 +558,7 @@ public class JvmDao {
                     + "safepoint_event group by trigger_type order by sum(sync + cleanup + vmop) desc");
             rs = statement.executeQuery(sql.toString());
             while (rs.next()) {
-                TriggerType triggerType = JdkUtil.identifyTriggerType(rs.getString(1));
+                TriggerType triggerType = Trigger.identifyTriggerType(rs.getString(1));
                 SafepointEventSummary summary = new SafepointEventSummary(triggerType, rs.getLong(2), rs.getLong(3),
                         rs.getInt(4));
                 safepointEventSummaries.add(summary);

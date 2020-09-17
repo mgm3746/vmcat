@@ -14,32 +14,50 @@
  *********************************************************************************************************************/
 package org.github.vmcat.domain.jdk;
 
-import org.github.vmcat.domain.TagEvent;
 import org.github.vmcat.domain.ThrowAwayEvent;
+import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_BLOB_SECT
+ * FOOTER_STATS
  * </p>
  * 
  * <p>
- * blog sect tag.
+ * Stats printed at the end of vm logging.
  * </p>
  * 
  * <pre>
- * &lt;sect index='1' size='182000' free='177710'/&gt;
+ * Polling page always armed
+ * Deoptimize                         1
+ * GenCollectForAllocation        10273
+ * EnableBiasedLocking                1
+ *     0 VM operations coalesced during safepoint
+ * Maximum sync time      0 ms
+ * Maximum vm operation time (except for Exit VM operation)     23 ms
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagBlobSectEvent implements TagEvent, ThrowAwayEvent {
+public class FooterStatsEvent implements ThrowAwayEvent {
 
     /**
-     * Regular expression defining the logging.
+     * Regular expression defining standard logging.
      */
-    private static final String REGEX = "^<sect .+/>$";
+    private static final String REGEX[] = {
+            //
+            "^Polling page always armed$",
+            //
+            "^" + SafepointEvent.TRIGGER + "[ ]{1,25}" + JdkRegEx.NUMBER + "$",
+            //
+            "^[ ]{0,4} " + JdkRegEx.NUMBER + " VM operations coalesced during safepoint",
+            //
+            "^Maximum sync time[ ]{1,6} \\d{1,6} ms",
+            //
+            "^Maximum vm operation time \\(except for Exit VM operation\\)[ ]{1,5} \\d{1,6} ms$"
+            //
+    };
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -47,7 +65,7 @@ public class TagBlobSectEvent implements TagEvent, ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -57,7 +75,7 @@ public class TagBlobSectEvent implements TagEvent, ThrowAwayEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagBlobSectEvent(String logEntry) {
+    public FooterStatsEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -67,7 +85,7 @@ public class TagBlobSectEvent implements TagEvent, ThrowAwayEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_BLOB_SECT.toString();
+        return JdkUtil.LogEventType.FOOTER_STATS.toString();
     }
 
     public long getTimestamp() {
@@ -82,6 +100,13 @@ public class TagBlobSectEvent implements TagEvent, ThrowAwayEvent {
      * @return true if the log line matches the event pattern, false otherwise.
      */
     public static final boolean match(String logLine) {
-        return logLine.matches(REGEX);
+        boolean match = false;
+        for (int i = 0; i < REGEX.length; i++) {
+            if (logLine.matches(REGEX[i])) {
+                match = true;
+                break;
+            }
+        }
+        return match;
     }
 }

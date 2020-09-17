@@ -12,9 +12,7 @@
  * Contributors:                                                                                                      *
  *    Mike Millson - initial API and implementation                                                                   *
  *********************************************************************************************************************/
-package org.github.vmcat.domain.jdk;
-
-import org.github.vmcat.util.jdk.JdkUtil;
+package org.github.vmcat.util.jdk;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -23,23 +21,29 @@ import junit.framework.TestCase;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TestTagBlobSectEvent extends TestCase {
+public class TestTrigger extends TestCase {
 
-    public void testParseLogLine() {
-        String logLine = "<sect index='1' size='182000' free='177710'/>";
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_BLOB_SECT.toString() + " not parsed.",
-                JdkUtil.parseLogLine(logLine) instanceof TagBlobSectEvent);
+    public void testTriggerIdentity() {
+        Trigger.TriggerType[] triggers = Trigger.TriggerType.values();
+        for (int i = 0; i < triggers.length; i++) {
+            if (!triggers[i].equals(Trigger.TriggerType.UNKNOWN)) {
+                Assert.assertFalse(triggers[i].name() + " not idenitified.",
+                        Trigger.identifyTriggerType(triggers[i].name()).equals(Trigger.TriggerType.UNKNOWN));
+            }
+        }
     }
 
-    public void testReportable() {
-        String logLine = "<sect index='1' size='182000' free='177710'/>";
-        Assert.assertFalse(JdkUtil.LogEventType.TAG_BLOB_SECT.toString() + " incorrectly indentified as reportable.",
-                JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
+    public void testTriggerLiteral() {
+        Trigger.TriggerType[] triggers = Trigger.TriggerType.values();
+        for (int i = 0; i < triggers.length; i++) {
+            if (!triggers[i].equals(Trigger.TriggerType.UNKNOWN)) {
+                try {
+                    Trigger.getTriggerLiteral(triggers[i]);
+                } catch (AssertionError e) {
+                    Assert.fail(triggers[i].name() + " literal not found.");
+                }
+            }
+        }
     }
 
-    public void testLogLine() {
-        String logLine = "<sect index='1' size='182000' free='177710'/>";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_BLOB_SECT.toString() + ".",
-                TagBlobSectEvent.match(logLine));
-    }
 }

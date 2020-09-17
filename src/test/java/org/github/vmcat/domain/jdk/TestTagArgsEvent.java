@@ -30,45 +30,44 @@ import junit.framework.TestCase;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TestTagVmArgumentsCommandEvent extends TestCase {
+public class TestTagArgsEvent extends TestCase {
 
     public void testParseLogLine() {
-        String logLine = "<command>";
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_ARGUMENTS_COMMAND.toString() + " not parsed.",
-                JdkUtil.parseLogLine(logLine) instanceof TagVmArgumentsCommandEvent);
+        String logLine = "<args>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_ARGS.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagArgsEvent);
     }
 
     public void testReportable() {
-        String logLine = "<command>";
-        Assert.assertFalse(
-                JdkUtil.LogEventType.TAG_VM_ARGUMENTS_COMMAND.toString() + " incorrectly indentified as reportable.",
+        String logLine = "<args>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_ARGS.toString() + " incorrectly indentified as reportable.",
                 JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
     public void testLogLine() {
-        String logLine = "<command>";
-        Assert.assertTrue(
-                "Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_ARGUMENTS_COMMAND.toString() + ".",
-                TagVmArgumentsCommandEvent.match(logLine));
+        String logLine = "<args>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_ARGS.toString() + ".",
+                TagArgsEvent.match(logLine));
     }
 
     public void testLogLineEndTag() {
-        String logLine = "</command>";
-        Assert.assertTrue(
-                "Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_ARGUMENTS_COMMAND.toString() + ".",
-                TagVmArgumentsCommandEvent.match(logLine));
+        String logLine = "</args>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_ARGS.toString() + ".",
+                TagArgsEvent.match(logLine));
     }
 
-    public void testCommandBlock() {
-        File testFile = new File(Constants.TEST_DATA_DIR + "dataset6.txt");
+    public void testArgumentsArgsBlock() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset5.txt");
         Manager manager = new Manager();
         manager.store(testFile);
         JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " vent identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_ARGUMENTS_COMMAND.toString() + " not identified.",
-                jvmRun.getEventTypes().contains(LogEventType.TAG_VM_ARGUMENTS_COMMAND));
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_ARGS.toString() + " not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.TAG_ARGS));
         Assert.assertEquals("Event type count not correct.", 1, jvmRun.getEventTypes().size());
-
+        String options = "-Xms6G -Xmx8G -XX:+UnlockDiagnosticVMOptions -XX:+UnsyncloadClass "
+                + "-Dcom.sun.management.jmxremote";
+        Assert.assertEquals("JDK options not correct.", options, jvmRun.getJvm().getOptions());
     }
 }

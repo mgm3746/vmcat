@@ -64,8 +64,8 @@ public class JdkRegEx {
      * [    2404          0              1    ]
      * </pre>
      */
-    public static final String THREAD_BLOCK = "\\[[ ]{4,7}" + JdkRegEx.NUMBER + "[ ]{9,10}" + JdkRegEx.NUMBER
-            + "[ ]{12,14}" + JdkRegEx.NUMBER + "[ ]{4}\\]";
+    public static final String THREAD_BLOCK = "\\[[ ]{4,17}" + JdkRegEx.NUMBER + "[ ]{9,17}" + JdkRegEx.NUMBER
+            + "[ ]{12,14}" + JdkRegEx.NUMBER + "[ ]{1,4}\\]";
 
     /**
      * The time as a whole number representing milliseconds.
@@ -83,8 +83,8 @@ public class JdkRegEx {
      * [    13    55    73    29  1387    ]
      * </pre>
      */
-    public static final String TIMES_BLOCK = "\\[[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}"
-            + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}" + JdkRegEx.TIME + "[ ]{1,5}\\]";
+    public static final String TIMES_BLOCK = "\\[[ ]{1,13}" + JdkRegEx.TIME + "[ ]{1,7}" + JdkRegEx.TIME + "[ ]{1,7}"
+            + JdkRegEx.TIME + "[ ]{1,7}" + JdkRegEx.TIME + "[ ]{1,7}" + JdkRegEx.TIME + "[ ]{1,5}\\]";
 
     /**
      * Timestamp. Milliseconds since JVM started.

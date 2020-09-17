@@ -20,26 +20,26 @@ import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_VM_AGUMENTS
+ * TAG_SECT
  * </p>
  * 
  * <p>
- * vm_arguments tag.
+ * tty blob sect tag.
  * </p>
  * 
  * <pre>
- * &lt;vm_arguments&gt;
+ * &lt;sect index='1' size='182000' free='177710'/&gt;
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmArgumentsEvent implements TagEvent, ThrowAwayEvent {
+public class TagSectEvent implements TagEvent, ThrowAwayEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^<(/)?vm_arguments>$";
+    private static final String REGEX = "^<sect .+/>$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -57,7 +57,7 @@ public class TagVmArgumentsEvent implements TagEvent, ThrowAwayEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagVmArgumentsEvent(String logEntry) {
+    public TagSectEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -67,7 +67,7 @@ public class TagVmArgumentsEvent implements TagEvent, ThrowAwayEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_ARGUMENTS.toString();
+        return JdkUtil.LogEventType.TAG_SECT.toString();
     }
 
     public long getTimestamp() {

@@ -28,10 +28,21 @@ import org.github.vmcat.util.jdk.JdkUtil;
  * 
  * <h3>Example Logging</h3>
  * 
+ * <p>
+ * JDK8:
+ * </p>
+ * 
  * <pre>
  *          vmop                    [threads: total initially_running wait_to_block]    [time: spin block sync cleanup vmop] page_trap_count
  * </pre>
  * 
+ * <p>
+ * JDK11:
+ * </p>
+ * 
+ * <pre>
+ *           vmop                            [ threads:    total initially_running wait_to_block ][ time:    spin   block    sync cleanup    vmop ] page_trap_count
+ * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
@@ -41,8 +52,9 @@ public class HeaderEvent implements ThrowAwayEvent {
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^         vmop                    \\[threads: total initially_running "
-            + "wait_to_block\\]    \\[time: spin block sync cleanup vmop\\] page_trap_count$";
+    private static final String REGEX = "^[ ]{9,10}vmop[ ]{18,28}\\[[ ]{0,1}threads:[ ]{1,4}total initially_running "
+            + "wait_to_block[ ]{0,1}\\][ ]{0,4}\\[[ ]{0,1}time:[ ]{1,4}spin[ ]{1,3}block[ ]{1,4}sync cleanup[ ]{1,4}"
+            + "vmop[ ]{0,1}\\] page_trap_count$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -50,7 +62,7 @@ public class HeaderEvent implements ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 

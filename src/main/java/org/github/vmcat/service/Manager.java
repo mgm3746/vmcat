@@ -30,13 +30,13 @@ import org.github.vmcat.domain.LogEvent;
 import org.github.vmcat.domain.TagEvent;
 import org.github.vmcat.domain.UnknownEvent;
 import org.github.vmcat.domain.jdk.SafepointEvent;
-import org.github.vmcat.domain.jdk.TagVmArgumentsArgsEvent;
-import org.github.vmcat.domain.jdk.TagVmArgumentsCommandEvent;
-import org.github.vmcat.domain.jdk.TagVmArgumentsLauncherEvent;
-import org.github.vmcat.domain.jdk.TagVmArgumentsPropertiesEvent;
-import org.github.vmcat.domain.jdk.TagVmVersionInfoEvent;
-import org.github.vmcat.domain.jdk.TagVmVersionNameEvent;
-import org.github.vmcat.domain.jdk.TagVmVersionReleaseEvent;
+import org.github.vmcat.domain.jdk.TagArgsEvent;
+import org.github.vmcat.domain.jdk.TagCommandEvent;
+import org.github.vmcat.domain.jdk.TagInfoEvent;
+import org.github.vmcat.domain.jdk.TagLauncherEvent;
+import org.github.vmcat.domain.jdk.TagNameEvent;
+import org.github.vmcat.domain.jdk.TagPropertiesEvent;
+import org.github.vmcat.domain.jdk.TagReleaseEvent;
 import org.github.vmcat.hsql.JvmDao;
 import org.github.vmcat.util.VmUtil;
 import org.github.vmcat.util.jdk.JdkUtil;
@@ -85,24 +85,20 @@ public class Manager {
                 if (event instanceof SafepointEvent) {
                     jvmDao.addSafepointEvent((SafepointEvent) event);
                 } else if (event instanceof TagEvent) {
-                    if ((event instanceof TagVmVersionNameEvent || event instanceof TagVmVersionReleaseEvent
-                            || event instanceof TagVmArgumentsCommandEvent
-                            || event instanceof TagVmArgumentsLauncherEvent)
+                    if ((event instanceof TagNameEvent || event instanceof TagReleaseEvent
+                            || event instanceof TagCommandEvent || event instanceof TagLauncherEvent)
                             && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
                         // flush data
                         logLine = bufferedReader.readLine();
-                    } else if (event instanceof TagVmVersionInfoEvent
-                            && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
+                    } else if (event instanceof TagInfoEvent && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
                         jvmDao.setVersion(bufferedReader.readLine());
-                    } else if (event instanceof TagVmArgumentsArgsEvent
-                            && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
+                    } else if (event instanceof TagArgsEvent && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
                         jvmDao.setOptions(bufferedReader.readLine());
-                    } else if (event instanceof TagVmArgumentsPropertiesEvent
-                            && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
+                    } else if (event instanceof TagPropertiesEvent && VmUtil.isHtmlEventStartTag(event.getLogEntry())) {
                         boolean flushProperties = true;
                         while (flushProperties) {
                             LogEvent nextEvent = JdkUtil.parseLogLine(bufferedReader.readLine());
-                            if (nextEvent instanceof TagVmArgumentsPropertiesEvent) {
+                            if (nextEvent instanceof TagPropertiesEvent) {
                                 // reached properties end tag
                                 flushProperties = false;
                             }

@@ -30,45 +30,44 @@ import junit.framework.TestCase;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TestTagVmArgumentsArgsEvent extends TestCase {
+public class TestTagInfoEvent extends TestCase {
 
     public void testParseLogLine() {
-        String logLine = "<args>";
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_ARGUMENTS_ARGS.toString() + " not parsed.",
-                JdkUtil.parseLogLine(logLine) instanceof TagVmArgumentsArgsEvent);
+        String logLine = "<info>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_INFO.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagInfoEvent);
     }
 
     public void testReportable() {
-        String logLine = "<args>";
-        Assert.assertFalse(
-                JdkUtil.LogEventType.TAG_VM_ARGUMENTS_ARGS.toString() + " incorrectly indentified as reportable.",
+        String logLine = "<info>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_INFO.toString() + " incorrectly indentified as reportable.",
                 JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
     public void testLogLine() {
-        String logLine = "<args>";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_ARGUMENTS_ARGS.toString() + ".",
-                TagVmArgumentsArgsEvent.match(logLine));
+        String logLine = "<info>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_INFO.toString() + ".",
+                TagInfoEvent.match(logLine));
     }
 
     public void testLogLineEndTag() {
-        String logLine = "</args>";
-        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_VM_ARGUMENTS_ARGS.toString() + ".",
-                TagVmArgumentsArgsEvent.match(logLine));
+        String logLine = "</info>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_INFO.toString() + ".",
+                TagInfoEvent.match(logLine));
     }
 
-    public void testArgumentsArgsBlock() {
-        File testFile = new File(Constants.TEST_DATA_DIR + "dataset5.txt");
+    public void testVersionInfoBlock() {
+        File testFile = new File(Constants.TEST_DATA_DIR + "dataset4.txt");
         Manager manager = new Manager();
         manager.store(testFile);
         JvmRun jvmRun = manager.getJvmRun(new Jvm(), Constants.DEFAULT_BOTTLENECK_THROUGHPUT_THRESHOLD);
         Assert.assertFalse(JdkUtil.LogEventType.UNKNOWN.toString() + " vent identified.",
                 jvmRun.getEventTypes().contains(LogEventType.UNKNOWN));
-        Assert.assertTrue(JdkUtil.LogEventType.TAG_VM_ARGUMENTS_ARGS.toString() + " not identified.",
-                jvmRun.getEventTypes().contains(LogEventType.TAG_VM_ARGUMENTS_ARGS));
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_INFO.toString() + " not identified.",
+                jvmRun.getEventTypes().contains(LogEventType.TAG_INFO));
         Assert.assertEquals("Event type count not correct.", 1, jvmRun.getEventTypes().size());
-        String options = "-Xms6G -Xmx8G -XX:+UnlockDiagnosticVMOptions -XX:+UnsyncloadClass "
-                + "-Dcom.sun.management.jmxremote";
-        Assert.assertEquals("JDK options not correct.", options, jvmRun.getJvm().getOptions());
+        String version = "OpenJDK 64-Bit Server VM (25.242-b08-debug) for linux-amd64 JRE (1.8.0_242-b08), built on "
+                + "Jan 15 2020 17:24:19 by &quot;mockbuild&quot; with gcc 4.8.5 20150623 (Red Hat 4.8.5-39)";
+        Assert.assertEquals("JDK version not correct.", version, jvmRun.getJvm().getVersion());
     }
 }

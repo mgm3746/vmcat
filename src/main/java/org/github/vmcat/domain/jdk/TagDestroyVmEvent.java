@@ -15,32 +15,31 @@
 package org.github.vmcat.domain.jdk;
 
 import org.github.vmcat.domain.TagEvent;
+import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_VM_VERSION_INFO
+ * TAG_DESTROY_VM
  * </p>
  * 
  * <p>
- * name tag.
+ * destroy_vm tag.
  * </p>
  * 
  * <pre>
- * &lt;info&gt;
- * OpenJDK 64-Bit Server VM (25.242-b08-debug) for linux-amd64 JRE (1.8.0_242-b08), built on Jan 15 2020 17:24:19 by &quot;mockbuild&quot; with gcc 4.8.5 20150623 (Red Hat 4.8.5-39)
- * &lt;/info&gt;
+ * &lt;destroy_vm stamp='47.951'/&gt;
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmVersionInfoEvent implements TagEvent {
+public class TagDestroyVmEvent implements TagEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^<(/)?info>$";
+    private static final String REGEX = "^<destroy_vm stamp='" + JdkRegEx.TIMESTAMP + "'/>$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -48,7 +47,7 @@ public class TagVmVersionInfoEvent implements TagEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -58,7 +57,7 @@ public class TagVmVersionInfoEvent implements TagEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagVmVersionInfoEvent(String logEntry) {
+    public TagDestroyVmEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -68,7 +67,7 @@ public class TagVmVersionInfoEvent implements TagEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_VERSION_INFO.toString();
+        return JdkUtil.LogEventType.TAG_DESTROY_VM.toString();
     }
 
     public long getTimestamp() {

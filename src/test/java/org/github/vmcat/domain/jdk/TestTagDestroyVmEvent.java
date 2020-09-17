@@ -14,74 +14,32 @@
  *********************************************************************************************************************/
 package org.github.vmcat.domain.jdk;
 
-import org.github.vmcat.domain.TagEvent;
-import org.github.vmcat.domain.ThrowAwayEvent;
 import org.github.vmcat.util.jdk.JdkUtil;
 
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
 /**
- * <p>
- * TAG_VM_AGUMENTS
- * </p>
- * 
- * <p>
- * vm_arguments tag.
- * </p>
- * 
- * <pre>
- * &lt;vm_arguments&gt;
- * </pre>
- * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmArgumentsEvent implements TagEvent, ThrowAwayEvent {
+public class TestTagDestroyVmEvent extends TestCase {
 
-    /**
-     * Regular expression defining the logging.
-     */
-    private static final String REGEX = "^<(/)?vm_arguments>$";
-
-    /**
-     * The log entry for the event. Can be used for debugging purposes.
-     */
-    private String logEntry;
-
-    /**
-     * The time when the VM event started in milliseconds after JVM startup.
-     */
-    private long timestamp;
-
-    /**
-     * Create event from log entry.
-     * 
-     * @param logEntry
-     *            The log entry for the event.
-     */
-    public TagVmArgumentsEvent(String logEntry) {
-        this.logEntry = logEntry;
-        this.timestamp = 0L;
+    public void testParseLogLine() {
+        String logLine = "<destroy_vm stamp='47.951'/>";
+        Assert.assertTrue(JdkUtil.LogEventType.TAG_DESTROY_VM.toString() + " not parsed.",
+                JdkUtil.parseLogLine(logLine) instanceof TagDestroyVmEvent);
     }
 
-    public String getLogEntry() {
-        return logEntry;
+    public void testReportable() {
+        String logLine = "<destroy_vm stamp='47.951'/>";
+        Assert.assertFalse(JdkUtil.LogEventType.TAG_DESTROY_VM.toString() + " incorrectly indentified as reportable.",
+                JdkUtil.isReportable(JdkUtil.identifyEventType(logLine)));
     }
 
-    public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_ARGUMENTS.toString();
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    /**
-     * Determine if the logLine matches the logging pattern(s) for this event.
-     * 
-     * @param logLine
-     *            The log line to test.
-     * @return true if the log line matches the event pattern, false otherwise.
-     */
-    public static final boolean match(String logLine) {
-        return logLine.matches(REGEX);
+    public void testLogLine() {
+        String logLine = "<destroy_vm stamp='47.951'/>";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.TAG_DESTROY_VM.toString() + ".",
+                TagDestroyVmEvent.match(logLine));
     }
 }

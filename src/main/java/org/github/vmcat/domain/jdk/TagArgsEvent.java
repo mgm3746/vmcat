@@ -15,31 +15,32 @@
 package org.github.vmcat.domain.jdk;
 
 import org.github.vmcat.domain.TagEvent;
-import org.github.vmcat.domain.ThrowAwayEvent;
 import org.github.vmcat.util.jdk.JdkUtil;
 
 /**
  * <p>
- * TAG_VM_ARGUMENTS_PROPERTIES
+ * TAG_ARGS
  * </p>
  * 
  * <p>
- * vm_arguments properties tag.
+ * vm_arguments args tag.
  * </p>
  * 
  * <pre>
- * &lt;vm_arguments&gt;
+ * &lt;args&gt;
+ * -Xms6G -Xmx8G -XX:+UnlockDiagnosticVMOptions -XX:+UnsyncloadClass -Dcom.sun.management.jmxremote
+ * &lt;/args&gt;
  * </pre>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TagVmArgumentsPropertiesEvent implements TagEvent, ThrowAwayEvent {
+public class TagArgsEvent implements TagEvent {
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^<(/)?properties>$";
+    private static final String REGEX = "^<(/)?args>$";
 
     /**
      * The log entry for the event. Can be used for debugging purposes.
@@ -47,7 +48,7 @@ public class TagVmArgumentsPropertiesEvent implements TagEvent, ThrowAwayEvent {
     private String logEntry;
 
     /**
-     * The time when the GC event started in milliseconds after JVM startup.
+     * The time when the VM event started in milliseconds after JVM startup.
      */
     private long timestamp;
 
@@ -57,7 +58,7 @@ public class TagVmArgumentsPropertiesEvent implements TagEvent, ThrowAwayEvent {
      * @param logEntry
      *            The log entry for the event.
      */
-    public TagVmArgumentsPropertiesEvent(String logEntry) {
+    public TagArgsEvent(String logEntry) {
         this.logEntry = logEntry;
         this.timestamp = 0L;
     }
@@ -67,7 +68,7 @@ public class TagVmArgumentsPropertiesEvent implements TagEvent, ThrowAwayEvent {
     }
 
     public String getName() {
-        return JdkUtil.LogEventType.TAG_VM_ARGUMENTS_PROPERTIES.toString();
+        return JdkUtil.LogEventType.TAG_ARGS.toString();
     }
 
     public long getTimestamp() {
