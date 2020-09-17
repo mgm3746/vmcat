@@ -8,7 +8,7 @@ A command line tool to parse Java -XX:+LogVMOutput and do analysis to support JV
   
  ### Recommended GC Logging Options
  
- >(-XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1
+ >-XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1
  
 ## Building
 
