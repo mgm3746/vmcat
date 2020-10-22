@@ -26,6 +26,8 @@ public class Trigger {
 
     /**
      * Defined triggers.
+     * 
+     * TODO: Split into GC vs. non-GC?
      */
     public enum TriggerType {
         BULK_REVOKE_BIAS, CGC_OPERATION, CMS_FINAL_REMARK, CMS_INITIAL_MARK, COLLECT_FOR_METADATA_ALLOCATION,

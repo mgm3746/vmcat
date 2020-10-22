@@ -306,34 +306,38 @@ public class JdkUtil {
     public static final boolean isBottleneck(SafepointEvent currentSafepointEvent,
             SafepointEvent previouseSafepointEvent, int throughputThreshold) throws TimeWarpException {
         /*
-         * Current event should not start until prior even finishes. Allow 1/1000 of a second overlap to account for
-         * precision and rounding limitations.
+         * Check for logging time warps, which could be an indication of mixed logging from multiple JVM runs. JDK8
+         * seems to have threading issues where sometimes logging gets mixed up under heavy load, and an event appears
+         * to start before the previous event finished. They are mainly very small overlaps or a few milliseconds.
          */
-        if (currentSafepointEvent.getTimestamp() < (previouseSafepointEvent.getTimestamp()
-                + previouseSafepointEvent.getDuration() - 1)) {
+        if (currentSafepointEvent.getTimestamp() < previouseSafepointEvent.getTimestamp()) {
+            throw new TimeWarpException("Bad order: " + Constants.LINE_SEPARATOR + previouseSafepointEvent.getLogEntry()
+                    + Constants.LINE_SEPARATOR + currentSafepointEvent.getLogEntry());
+        } else if (currentSafepointEvent.getTimestamp() < (previouseSafepointEvent.getTimestamp()
+                + previouseSafepointEvent.getDuration() - 1000)) {
+            // Only report if overlap > 1 sec to account for small overlaps due to JDK threading issues
             throw new TimeWarpException(
                     "Event overlap: " + Constants.LINE_SEPARATOR + previouseSafepointEvent.getLogEntry()
                             + Constants.LINE_SEPARATOR + currentSafepointEvent.getLogEntry());
-        }
+        } else if (currentSafepointEvent
+                .getTimestamp() <= (previouseSafepointEvent.getTimestamp() + previouseSafepointEvent.getDuration())) {
+            // Small (<1 sec) event overlap
+            return true;
+        } else {
+            /*
+             * Timestamp is the start of a vm event; therefore, the interval is from the end of the prior event to the
+             * end of the current event.
+             */
+            long interval = currentSafepointEvent.getTimestamp() + currentSafepointEvent.getDuration()
+                    - previouseSafepointEvent.getTimestamp() - previouseSafepointEvent.getDuration();
+            // Determine the maximum duration for the given interval that meets the throughput goal.
+            BigDecimal durationThreshold = new BigDecimal(100 - throughputThreshold);
+            durationThreshold = durationThreshold.movePointLeft(2);
+            durationThreshold = durationThreshold.multiply(new BigDecimal(interval));
+            durationThreshold.setScale(0, RoundingMode.DOWN);
+            return (currentSafepointEvent.getDuration() > durationThreshold.intValue());
 
-        /*
-         * Timestamp is the start of a vm event; therefore, the interval is from the end of the prior event to the end
-         * of the current event.
-         */
-        long interval = currentSafepointEvent.getTimestamp() + currentSafepointEvent.getDuration()
-                - previouseSafepointEvent.getTimestamp() - previouseSafepointEvent.getDuration();
-        if (interval < 0) {
-            throw new TimeWarpException(
-                    "Negative interval: " + Constants.LINE_SEPARATOR + previouseSafepointEvent.getLogEntry()
-                            + Constants.LINE_SEPARATOR + currentSafepointEvent.getLogEntry());
         }
-
-        // Determine the maximum duration for the given interval that meets the throughput goal.
-        BigDecimal durationThreshold = new BigDecimal(100 - throughputThreshold);
-        durationThreshold = durationThreshold.movePointLeft(2);
-        durationThreshold = durationThreshold.multiply(new BigDecimal(interval));
-        durationThreshold.setScale(0, RoundingMode.DOWN);
-        return (currentSafepointEvent.getDuration() > durationThreshold.intValue());
     }
 
     /**
