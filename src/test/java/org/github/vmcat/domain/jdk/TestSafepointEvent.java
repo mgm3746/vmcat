@@ -17,8 +17,8 @@ package org.github.vmcat.domain.jdk;
 import org.github.vmcat.util.jdk.JdkUtil;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
 import org.github.vmcat.util.jdk.Trigger;
+import org.junit.Assert;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
