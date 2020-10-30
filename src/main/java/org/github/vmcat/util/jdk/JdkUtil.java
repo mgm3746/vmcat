@@ -292,15 +292,15 @@ public class JdkUtil {
     }
 
     /**
-     * TriggerType Determine if the <code>SafepointEvent</code> should be classified as a bottleneck.
+     * Determine if the <code>SafepointEvent</code> should be classified as a bottleneck.
      * 
      * @param currentSafepointEvent
      *            Current <code>SafepointEvent</code>.
      * @param previouseSafepointEvent
      *            Previous <code>SafepointEvent</code>.
      * @param throughputThreshold
-     *            Throughput threshold (percent of time spent not is safepoint for a given time interval) to be
-     *            considered a bottleneck. Whole number 0-100.
+     *            Throughput threshold (percent of time not in safepoint for a given time interval) to be considered a
+     *            bottleneck. Whole number 0-100.
      * @return True if the <code>SafepointEvent</code> pause time meets the bottleneck definition.
      */
     public static final boolean isBottleneck(SafepointEvent currentSafepointEvent,
@@ -336,7 +336,6 @@ public class JdkUtil {
             durationThreshold = durationThreshold.multiply(new BigDecimal(interval));
             durationThreshold.setScale(0, RoundingMode.DOWN);
             return (currentSafepointEvent.getDuration() > durationThreshold.intValue());
-
         }
     }
 
