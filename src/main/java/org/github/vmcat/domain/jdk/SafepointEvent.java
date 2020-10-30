@@ -60,19 +60,20 @@ public class SafepointEvent implements LogEvent {
      */
     public static final String TRIGGER = "(" + Trigger.BULK_REVOKE_BIAS + "|" + Trigger.CMS_FINAL_REMARK + "|"
             + Trigger.CMS_INITIAL_MARK + "|" + Trigger.COLLECT_FOR_METADATA_ALLOCATION + "|" + Trigger.DEOPTIMIZE + "|"
-            + Trigger.ENABLE_BIASED_LOCKING + "|" + Trigger.FIND_DEADLOCKS + "|" + Trigger.FORCE_SAFEPOINT + "|"
-            + Trigger.FORCE_SAFEPOINT + "|" + Trigger.G1_COLLECT_FOR_ALLOCATION + "|" + Trigger.G1_INC_COLLECTION_PAUSE
-            + "|" + Trigger.CGC_OPERATION + "|" + Trigger.GEN_COLLECT_FOR_ALLOCATION + "|" + Trigger.NO_VM_OPERATION
-            + "|" + Trigger.PARALLEL_GC_FAILED_ALLOCATION + "|" + Trigger.PARALLEL_GC_SYSTEM_GC + "|"
-            + Trigger.PRINT_JNI + "|" + Trigger.PRINT_THREADS + "|" + Trigger.REVOKE_BIAS + "|"
-            + Trigger.SHENANDOAH_DEGENERATED_GC + "|" + Trigger.SHENANDOAH_FINAL_MARK_START_EVAC + "|"
-            + Trigger.SHENANDOAH_FINAL_UPDATE_REFS + "|" + Trigger.SHENANDOAH_INIT_MARK + "|"
-            + Trigger.SHENANDOAH_INIT_UPDATE_REFS + "|" + Trigger.THREAD_DUMP + ")";
+            + Trigger.ENABLE_BIASED_LOCKING + "|" + Trigger.EXIT + "|" + Trigger.FIND_DEADLOCKS + "|"
+            + Trigger.FORCE_SAFEPOINT + "|" + Trigger.FORCE_SAFEPOINT + "|" + Trigger.G1_COLLECT_FOR_ALLOCATION + "|"
+            + Trigger.G1_INC_COLLECTION_PAUSE + "|" + Trigger.CGC_OPERATION + "|" + Trigger.GEN_COLLECT_FOR_ALLOCATION
+            + "|" + Trigger.NO_VM_OPERATION + "|" + Trigger.PARALLEL_GC_FAILED_ALLOCATION + "|"
+            + Trigger.PARALLEL_GC_SYSTEM_GC + "|" + Trigger.PRINT_JNI + "|" + Trigger.PRINT_THREADS + "|"
+            + Trigger.REVOKE_BIAS + "|" + Trigger.SHENANDOAH_DEGENERATED_GC + "|"
+            + Trigger.SHENANDOAH_FINAL_MARK_START_EVAC + "|" + Trigger.SHENANDOAH_FINAL_UPDATE_REFS + "|"
+            + Trigger.SHENANDOAH_INIT_MARK + "|" + Trigger.SHENANDOAH_INIT_UPDATE_REFS + "|" + Trigger.THREAD_DUMP
+            + ")";
 
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^[ ]{0,3}" + JdkRegEx.DECORATOR + " " + TRIGGER + "[ ]{1,25}"
+    private static final String REGEX = "^[ ]{0,3}" + JdkRegEx.DECORATOR + " " + TRIGGER + "[ ]{1,29}"
             + JdkRegEx.THREAD_BLOCK + "[ ]{0,6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2,15}" + JdkRegEx.NUMBER + "[ ]*$";
 
     private static Pattern pattern = Pattern.compile(REGEX);
@@ -161,6 +162,8 @@ public class SafepointEvent implements LogEvent {
                 triggerType = Trigger.TriggerType.DEOPTIMIZE;
             } else if (trigger.equals(Trigger.ENABLE_BIASED_LOCKING)) {
                 triggerType = Trigger.TriggerType.ENABLE_BIASED_LOCKING;
+            } else if (trigger.equals(Trigger.EXIT)) {
+                triggerType = Trigger.TriggerType.EXIT;
             } else if (trigger.equals(Trigger.FIND_DEADLOCKS)) {
                 triggerType = Trigger.TriggerType.FIND_DEADLOCKS;
             } else if (trigger.equals(Trigger.G1_COLLECT_FOR_ALLOCATION)) {

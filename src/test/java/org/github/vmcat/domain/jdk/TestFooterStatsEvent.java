@@ -78,4 +78,10 @@ public class TestFooterStatsEvent extends TestCase {
         Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.FOOTER_STATS.toString() + ".",
                 FooterStatsEvent.match(logLine));
     }
+
+    public void testLogLineExit() {
+        String logLine = "Exit                               1";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.FOOTER_STATS.toString() + ".",
+                FooterStatsEvent.match(logLine));
+    }
 }

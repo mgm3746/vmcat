@@ -675,4 +675,29 @@ public class TestSafepointEvent extends TestCase {
         Assert.assertEquals("Page trap count not parsed correctly.", 0, event.getPageTrapCount());
         Assert.assertEquals("Duration not calculated correctly.", 18, event.getDuration());
     }
+
+    public void testLogLineExit() {
+        String logLine = "1574.106: Exit                             [      55          0              1    ]      "
+                + "[     0     0     0     0   312    ]  0";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.SAFEPOINT.name() + ".",
+                SafepointEvent.match(logLine));
+        SafepointEvent event = new SafepointEvent(logLine);
+        Assert.assertEquals("Time stamp not parsed correctly.", 1574106, event.getTimestamp());
+        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.EXIT, event.getTriggerType());
+        Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 55,
+                event.getThreadsTotal());
+        Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
+                event.getThreadsSpinning());
+        Assert.assertEquals("Number of threads that were blocked before safepoint not parsed correctly.", 1,
+                event.getThreadsBlocked());
+        Assert.assertEquals("Time for spinning threads to reach safepoint.", 0, event.getTimeSpin());
+        Assert.assertEquals("Time for blocked threads to reach safepoint not parsed correctly.", 0,
+                event.getTimeBlock());
+        Assert.assertEquals("Time for all threads to reach safepoint (sync) not parsed correctly.", 0,
+                event.getTimeSync());
+        Assert.assertEquals("Time for cleanup activities not parsed correctly.", 0, event.getTimeCleanup());
+        Assert.assertEquals("Time for safepoint activity (vmop) not parsed correctly.", 312, event.getTimeVmop());
+        Assert.assertEquals("Page trap count not parsed correctly.", 0, event.getPageTrapCount());
+        Assert.assertEquals("Duration not calculated correctly.", 312, event.getDuration());
+    }
 }

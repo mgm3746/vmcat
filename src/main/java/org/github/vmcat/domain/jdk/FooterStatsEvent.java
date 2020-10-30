@@ -49,7 +49,7 @@ public class FooterStatsEvent implements ThrowAwayEvent {
             //
             "^Polling page always armed$",
             //
-            "^" + SafepointEvent.TRIGGER + "[ ]{1,25}" + JdkRegEx.NUMBER + "$",
+            "^" + SafepointEvent.TRIGGER + "[ ]{1,32}" + JdkRegEx.NUMBER + "$",
             //
             "^[ ]{0,4} " + JdkRegEx.NUMBER + " VM operations coalesced during safepoint",
             //

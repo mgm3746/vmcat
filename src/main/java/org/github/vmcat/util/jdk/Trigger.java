@@ -32,7 +32,7 @@ public class Trigger {
     public enum TriggerType {
         BULK_REVOKE_BIAS, CGC_OPERATION, CMS_FINAL_REMARK, CMS_INITIAL_MARK, COLLECT_FOR_METADATA_ALLOCATION,
         //
-        DEOPTIMIZE, ENABLE_BIASED_LOCKING, FIND_DEADLOCKS, FORCE_SAFEPOINT, G1_COLLECT_FOR_ALLOCATION,
+        DEOPTIMIZE, ENABLE_BIASED_LOCKING, EXIT, FIND_DEADLOCKS, FORCE_SAFEPOINT, G1_COLLECT_FOR_ALLOCATION,
         //
         G1_INC_COLLECTION_PAUSE, GEN_COLLECT_FOR_ALLOCATION, NO_VM_OPERATION, PARALLEL_GC_FAILED_ALLOCATION,
         //
@@ -110,6 +110,13 @@ public class Trigger {
      * </p>
      */
     public static final String ENABLE_BIASED_LOCKING = "EnableBiasedLocking";
+
+    /**
+     * <p>
+     * JVM exit.
+     * </p>
+     */
+    public static final String EXIT = "Exit";
 
     /**
      * <p>
@@ -273,6 +280,9 @@ public class Trigger {
         case ENABLE_BIASED_LOCKING:
             triggerLiteral = ENABLE_BIASED_LOCKING;
             break;
+        case EXIT:
+            triggerLiteral = EXIT;
+            break;
         case FIND_DEADLOCKS:
             triggerLiteral = FIND_DEADLOCKS;
             break;
@@ -356,6 +366,8 @@ public class Trigger {
             return TriggerType.DEOPTIMIZE;
         if (TriggerType.ENABLE_BIASED_LOCKING.name().matches(trigger))
             return TriggerType.ENABLE_BIASED_LOCKING;
+        if (TriggerType.EXIT.name().matches(trigger))
+            return TriggerType.EXIT;
         if (TriggerType.FIND_DEADLOCKS.name().matches(trigger))
             return TriggerType.FIND_DEADLOCKS;
         if (TriggerType.FORCE_SAFEPOINT.name().matches(trigger))
