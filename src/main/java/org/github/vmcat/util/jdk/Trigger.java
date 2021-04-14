@@ -32,9 +32,11 @@ public class Trigger {
     public enum TriggerType {
         BULK_REVOKE_BIAS, CGC_OPERATION, CMS_FINAL_REMARK, CMS_INITIAL_MARK, COLLECT_FOR_METADATA_ALLOCATION,
         //
-        DEOPTIMIZE, ENABLE_BIASED_LOCKING, EXIT, FIND_DEADLOCKS, FORCE_SAFEPOINT, G1_COLLECT_FOR_ALLOCATION,
+        DEOPTIMIZE, ENABLE_BIASED_LOCKING, EXIT, FIND_DEADLOCKS, FORCE_SAFEPOINT,
         //
-        G1_INC_COLLECTION_PAUSE, GEN_COLLECT_FOR_ALLOCATION, NO_VM_OPERATION, PARALLEL_GC_FAILED_ALLOCATION,
+        G1_COLLECT_FOR_ALLOCATION, G1_INC_COLLECTION_PAUSE, GEN_COLLECT_FOR_ALLOCATION, GEN_COLLECT_FULL_CONCURRENT,
+        //
+        GET_ALL_STACK_TRACES, GET_THREAD_LIST_STACK_TRACES, NO_VM_OPERATION, PARALLEL_GC_FAILED_ALLOCATION,
         //
         PARALLEL_GC_SYSTEM_GC, PRINT_JNI, PRINT_THREADS, REVOKE_BIAS, SHENANDOAH_DEGENERATED_GC,
         //
@@ -61,14 +63,6 @@ public class Trigger {
 
     /**
      * <p>
-     * When the Metaspace is resized. The JVM has failed to allocate memory for something that should be stored in
-     * Metaspace and does a full collection before attempting to resize the Metaspace.
-     * </p>
-     */
-    public static final String COLLECT_FOR_METADATA_ALLOCATION = "CollectForMetadataAllocation";
-
-    /**
-     * <p>
      * CMS Final Remark.The second stop-the-world phase of the concurrent low pause collector. All live objects are
      * marked, starting with the objects identified in the CMS Initial Mark. This event does not do any garbage
      * collection. It rescans objects directly reachable from GC roots, processes weak references, and remarks objects.
@@ -83,6 +77,14 @@ public class Trigger {
      * </p>
      */
     public static final String CMS_INITIAL_MARK = "CMS_Initial_Mark";
+
+    /**
+     * <p>
+     * When the Metaspace is resized. The JVM has failed to allocate memory for something that should be stored in
+     * Metaspace and does a full collection before attempting to resize the Metaspace.
+     * </p>
+     */
+    public static final String COLLECT_FOR_METADATA_ALLOCATION = "CollectForMetadataAllocation";
 
     /**
      * <p>
@@ -152,6 +154,27 @@ public class Trigger {
      * </p>
      */
     public static final String GEN_COLLECT_FOR_ALLOCATION = "GenCollectForAllocation";
+
+    /**
+     * <p>
+     * Generational collector full concurrent collect? How can a concurrent collection require a safepoint?
+     * </p>
+     */
+    public static final String GEN_COLLECT_FULL_CONCURRENT = "GenCollectFullConcurrent";
+
+    /**
+     * <p>
+     * JVMTI method to get stack trace information in native code for all threads.
+     * </p>
+     */
+    public static final String GET_ALL_STACK_TRACES = "GetAllStackTraces";
+
+    /**
+     * <p>
+     * JVMTI methods to get stack trace information in native code for a list of threads.
+     * </p>
+     */
+    public static final String GET_THREAD_LIST_STACK_TRACES = "GetThreadListStackTraces";
 
     /**
      * <p>
@@ -301,6 +324,15 @@ public class Trigger {
         case GEN_COLLECT_FOR_ALLOCATION:
             triggerLiteral = GEN_COLLECT_FOR_ALLOCATION;
             break;
+        case GEN_COLLECT_FULL_CONCURRENT:
+            triggerLiteral = GEN_COLLECT_FULL_CONCURRENT;
+            break;
+        case GET_ALL_STACK_TRACES:
+            triggerLiteral = GET_ALL_STACK_TRACES;
+            break;
+        case GET_THREAD_LIST_STACK_TRACES:
+            triggerLiteral = GET_THREAD_LIST_STACK_TRACES;
+            break;
         case NO_VM_OPERATION:
             triggerLiteral = NO_VM_OPERATION;
             break;
@@ -378,6 +410,12 @@ public class Trigger {
             return TriggerType.G1_INC_COLLECTION_PAUSE;
         if (TriggerType.GEN_COLLECT_FOR_ALLOCATION.name().matches(trigger))
             return TriggerType.GEN_COLLECT_FOR_ALLOCATION;
+        if (TriggerType.GEN_COLLECT_FULL_CONCURRENT.name().matches(trigger))
+            return TriggerType.GEN_COLLECT_FULL_CONCURRENT;
+        if (TriggerType.GET_ALL_STACK_TRACES.name().matches(trigger))
+            return TriggerType.GET_ALL_STACK_TRACES;
+        if (TriggerType.GET_THREAD_LIST_STACK_TRACES.name().matches(trigger))
+            return TriggerType.GET_THREAD_LIST_STACK_TRACES;
         if (TriggerType.NO_VM_OPERATION.name().matches(trigger))
             return TriggerType.NO_VM_OPERATION;
         if (TriggerType.PARALLEL_GC_FAILED_ALLOCATION.name().matches(trigger))

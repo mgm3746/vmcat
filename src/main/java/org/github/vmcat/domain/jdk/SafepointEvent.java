@@ -58,17 +58,18 @@ public class SafepointEvent implements LogEvent {
     /**
      * Trigger(s) regular expression(s).
      */
-    public static final String TRIGGER = "(" + Trigger.BULK_REVOKE_BIAS + "|" + Trigger.CMS_FINAL_REMARK + "|"
-            + Trigger.CMS_INITIAL_MARK + "|" + Trigger.COLLECT_FOR_METADATA_ALLOCATION + "|" + Trigger.DEOPTIMIZE + "|"
-            + Trigger.ENABLE_BIASED_LOCKING + "|" + Trigger.EXIT + "|" + Trigger.FIND_DEADLOCKS + "|"
-            + Trigger.FORCE_SAFEPOINT + "|" + Trigger.FORCE_SAFEPOINT + "|" + Trigger.G1_COLLECT_FOR_ALLOCATION + "|"
-            + Trigger.G1_INC_COLLECTION_PAUSE + "|" + Trigger.CGC_OPERATION + "|" + Trigger.GEN_COLLECT_FOR_ALLOCATION
-            + "|" + Trigger.NO_VM_OPERATION + "|" + Trigger.PARALLEL_GC_FAILED_ALLOCATION + "|"
-            + Trigger.PARALLEL_GC_SYSTEM_GC + "|" + Trigger.PRINT_JNI + "|" + Trigger.PRINT_THREADS + "|"
-            + Trigger.REVOKE_BIAS + "|" + Trigger.SHENANDOAH_DEGENERATED_GC + "|"
-            + Trigger.SHENANDOAH_FINAL_MARK_START_EVAC + "|" + Trigger.SHENANDOAH_FINAL_UPDATE_REFS + "|"
-            + Trigger.SHENANDOAH_INIT_MARK + "|" + Trigger.SHENANDOAH_INIT_UPDATE_REFS + "|" + Trigger.THREAD_DUMP
-            + ")";
+    public static final String TRIGGER = "(" + Trigger.BULK_REVOKE_BIAS + "|" + Trigger.CGC_OPERATION + "|"
+            + Trigger.CMS_FINAL_REMARK + "|" + Trigger.CMS_INITIAL_MARK + "|" + Trigger.COLLECT_FOR_METADATA_ALLOCATION
+            + "|" + Trigger.DEOPTIMIZE + "|" + Trigger.ENABLE_BIASED_LOCKING + "|" + Trigger.EXIT + "|"
+            + Trigger.FIND_DEADLOCKS + "|" + Trigger.FORCE_SAFEPOINT + "|" + Trigger.FORCE_SAFEPOINT + "|"
+            + Trigger.G1_COLLECT_FOR_ALLOCATION + "|" + Trigger.G1_INC_COLLECTION_PAUSE + "|"
+            + Trigger.GEN_COLLECT_FOR_ALLOCATION + "|" + Trigger.GEN_COLLECT_FULL_CONCURRENT + "|"
+            + Trigger.GET_ALL_STACK_TRACES + "|" + Trigger.GET_THREAD_LIST_STACK_TRACES + "|" + Trigger.NO_VM_OPERATION
+            + "|" + Trigger.PARALLEL_GC_FAILED_ALLOCATION + "|" + Trigger.PARALLEL_GC_SYSTEM_GC + "|"
+            + Trigger.PRINT_JNI + "|" + Trigger.PRINT_THREADS + "|" + Trigger.REVOKE_BIAS + "|"
+            + Trigger.SHENANDOAH_DEGENERATED_GC + "|" + Trigger.SHENANDOAH_FINAL_MARK_START_EVAC + "|"
+            + Trigger.SHENANDOAH_FINAL_UPDATE_REFS + "|" + Trigger.SHENANDOAH_INIT_MARK + "|"
+            + Trigger.SHENANDOAH_INIT_UPDATE_REFS + "|" + Trigger.THREAD_DUMP + ")";
 
     /**
      * Regular expression defining the logging.
@@ -176,6 +177,12 @@ public class SafepointEvent implements LogEvent {
                 triggerType = Trigger.TriggerType.CGC_OPERATION;
             } else if (trigger.equals(Trigger.GEN_COLLECT_FOR_ALLOCATION)) {
                 triggerType = Trigger.TriggerType.GEN_COLLECT_FOR_ALLOCATION;
+            } else if (trigger.equals(Trigger.GEN_COLLECT_FULL_CONCURRENT)) {
+                triggerType = Trigger.TriggerType.GEN_COLLECT_FULL_CONCURRENT;
+            } else if (trigger.equals(Trigger.GET_ALL_STACK_TRACES)) {
+                triggerType = Trigger.TriggerType.GET_ALL_STACK_TRACES;
+            } else if (trigger.equals(Trigger.GET_THREAD_LIST_STACK_TRACES)) {
+                triggerType = Trigger.TriggerType.GET_THREAD_LIST_STACK_TRACES;
             } else if (trigger.equals(Trigger.NO_VM_OPERATION)) {
                 triggerType = Trigger.TriggerType.NO_VM_OPERATION;
             } else if (trigger.equals(Trigger.PARALLEL_GC_FAILED_ALLOCATION)) {
