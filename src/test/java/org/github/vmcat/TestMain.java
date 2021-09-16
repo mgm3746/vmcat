@@ -137,7 +137,8 @@ public class TestMain extends TestCase {
             // Pass null object since parseOptions is static
             Object o = parseOptions.invoke(null, (Object) args);
             CommandLine cmd = (CommandLine) o;
-            // An unrecognized option throws an <code>UnrecognizedOptionException</code>, which is
+            // An unrecognized option throws an <code>UnrecognizedOptionException</code>,
+            // which is
             // caught and the usage line output.
             Assert.assertNull("An invalid option was accepted.", cmd);
         } catch (ClassNotFoundException e) {

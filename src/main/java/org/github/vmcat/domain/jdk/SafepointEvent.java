@@ -21,8 +21,8 @@ import org.github.vmcat.domain.LogEvent;
 import org.github.vmcat.util.jdk.JdkMath;
 import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
-import org.github.vmcat.util.jdk.Trigger;
-import org.github.vmcat.util.jdk.Trigger.TriggerType;
+import org.github.vmcat.util.jdk.Safepoint;
+import org.github.vmcat.util.jdk.Safepoint.Trigger;
 
 /**
  * <p>
@@ -54,27 +54,10 @@ import org.github.vmcat.util.jdk.Trigger.TriggerType;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  */
 public class SafepointEvent implements LogEvent {
-
-    /**
-     * Trigger(s) regular expression(s).
-     */
-    public static final String TRIGGER = "(" + Trigger.BULK_REVOKE_BIAS + "|" + Trigger.CGC_OPERATION + "|"
-            + Trigger.CMS_FINAL_REMARK + "|" + Trigger.CMS_INITIAL_MARK + "|" + Trigger.COLLECT_FOR_METADATA_ALLOCATION
-            + "|" + Trigger.DEOPTIMIZE + "|" + Trigger.ENABLE_BIASED_LOCKING + "|" + Trigger.EXIT + "|"
-            + Trigger.FIND_DEADLOCKS + "|" + Trigger.FORCE_SAFEPOINT + "|" + Trigger.FORCE_SAFEPOINT + "|"
-            + Trigger.G1_COLLECT_FOR_ALLOCATION + "|" + Trigger.G1_INC_COLLECTION_PAUSE + "|"
-            + Trigger.GEN_COLLECT_FOR_ALLOCATION + "|" + Trigger.GEN_COLLECT_FULL_CONCURRENT + "|"
-            + Trigger.GET_ALL_STACK_TRACES + "|" + Trigger.GET_THREAD_LIST_STACK_TRACES + "|" + Trigger.NO_VM_OPERATION
-            + "|" + Trigger.PARALLEL_GC_FAILED_ALLOCATION + "|" + Trigger.PARALLEL_GC_SYSTEM_GC + "|"
-            + Trigger.PRINT_JNI + "|" + Trigger.PRINT_THREADS + "|" + Trigger.REVOKE_BIAS + "|"
-            + Trigger.SHENANDOAH_DEGENERATED_GC + "|" + Trigger.SHENANDOAH_FINAL_MARK_START_EVAC + "|"
-            + Trigger.SHENANDOAH_FINAL_UPDATE_REFS + "|" + Trigger.SHENANDOAH_INIT_MARK + "|"
-            + Trigger.SHENANDOAH_INIT_UPDATE_REFS + "|" + Trigger.THREAD_DUMP + ")";
-
     /**
      * Regular expression defining the logging.
      */
-    private static final String REGEX = "^[ ]{0,3}" + JdkRegEx.DECORATOR + " " + TRIGGER + "[ ]{1,29}"
+    private static final String REGEX = "^[ ]{0,3}" + JdkRegEx.DECORATOR + " " + Safepoint.triggerRegEx() + "[ ]{1,29}"
             + JdkRegEx.THREAD_BLOCK + "[ ]{0,6}" + JdkRegEx.TIMES_BLOCK + "[ ]{2,15}" + JdkRegEx.NUMBER + "[ ]*$";
 
     private static Pattern pattern = Pattern.compile(REGEX);
@@ -135,9 +118,9 @@ public class SafepointEvent implements LogEvent {
     int pageTrapCount;
 
     /**
-     * The <code>TriggerType</code> for the safepoint event.
+     * The <code>Trigger</code> for the safepoint event.
      */
-    private TriggerType triggerType;
+    private Trigger trigger;
 
     /**
      * Create event from log entry.
@@ -150,63 +133,63 @@ public class SafepointEvent implements LogEvent {
         Matcher matcher = pattern.matcher(logEntry);
         if (matcher.find()) {
             timestamp = JdkMath.convertSecsToMillis(matcher.group(12)).longValue();
-            String trigger = matcher.group(13);
-            if (trigger.equals(Trigger.BULK_REVOKE_BIAS)) {
-                triggerType = Trigger.TriggerType.BULK_REVOKE_BIAS;
-            } else if (trigger.equals(Trigger.CMS_FINAL_REMARK)) {
-                triggerType = Trigger.TriggerType.CMS_FINAL_REMARK;
-            } else if (trigger.equals(Trigger.CMS_INITIAL_MARK)) {
-                triggerType = Trigger.TriggerType.CMS_INITIAL_MARK;
-            } else if (trigger.equals(Trigger.COLLECT_FOR_METADATA_ALLOCATION)) {
-                triggerType = Trigger.TriggerType.COLLECT_FOR_METADATA_ALLOCATION;
-            } else if (trigger.equals(Trigger.DEOPTIMIZE)) {
-                triggerType = Trigger.TriggerType.DEOPTIMIZE;
-            } else if (trigger.equals(Trigger.ENABLE_BIASED_LOCKING)) {
-                triggerType = Trigger.TriggerType.ENABLE_BIASED_LOCKING;
-            } else if (trigger.equals(Trigger.EXIT)) {
-                triggerType = Trigger.TriggerType.EXIT;
-            } else if (trigger.equals(Trigger.FIND_DEADLOCKS)) {
-                triggerType = Trigger.TriggerType.FIND_DEADLOCKS;
-            } else if (trigger.equals(Trigger.G1_COLLECT_FOR_ALLOCATION)) {
-                triggerType = Trigger.TriggerType.G1_COLLECT_FOR_ALLOCATION;
-            } else if (trigger.equals(Trigger.FORCE_SAFEPOINT)) {
-                triggerType = Trigger.TriggerType.FORCE_SAFEPOINT;
-            } else if (trigger.equals(Trigger.G1_INC_COLLECTION_PAUSE)) {
-                triggerType = Trigger.TriggerType.G1_INC_COLLECTION_PAUSE;
-            } else if (trigger.equals(Trigger.CGC_OPERATION)) {
-                triggerType = Trigger.TriggerType.CGC_OPERATION;
-            } else if (trigger.equals(Trigger.GEN_COLLECT_FOR_ALLOCATION)) {
-                triggerType = Trigger.TriggerType.GEN_COLLECT_FOR_ALLOCATION;
-            } else if (trigger.equals(Trigger.GEN_COLLECT_FULL_CONCURRENT)) {
-                triggerType = Trigger.TriggerType.GEN_COLLECT_FULL_CONCURRENT;
-            } else if (trigger.equals(Trigger.GET_ALL_STACK_TRACES)) {
-                triggerType = Trigger.TriggerType.GET_ALL_STACK_TRACES;
-            } else if (trigger.equals(Trigger.GET_THREAD_LIST_STACK_TRACES)) {
-                triggerType = Trigger.TriggerType.GET_THREAD_LIST_STACK_TRACES;
-            } else if (trigger.equals(Trigger.NO_VM_OPERATION)) {
-                triggerType = Trigger.TriggerType.NO_VM_OPERATION;
-            } else if (trigger.equals(Trigger.PARALLEL_GC_FAILED_ALLOCATION)) {
-                triggerType = Trigger.TriggerType.PARALLEL_GC_FAILED_ALLOCATION;
-            } else if (trigger.equals(Trigger.PARALLEL_GC_SYSTEM_GC)) {
-                triggerType = Trigger.TriggerType.PARALLEL_GC_SYSTEM_GC;
-            } else if (trigger.equals(Trigger.PRINT_JNI)) {
-                triggerType = Trigger.TriggerType.PRINT_JNI;
-            } else if (trigger.equals(Trigger.PRINT_THREADS)) {
-                triggerType = Trigger.TriggerType.PRINT_THREADS;
-            } else if (trigger.equals(Trigger.REVOKE_BIAS)) {
-                triggerType = Trigger.TriggerType.REVOKE_BIAS;
-            } else if (trigger.equals(Trigger.SHENANDOAH_DEGENERATED_GC)) {
-                triggerType = Trigger.TriggerType.SHENANDOAH_DEGENERATED_GC;
-            } else if (trigger.equals(Trigger.SHENANDOAH_FINAL_MARK_START_EVAC)) {
-                triggerType = Trigger.TriggerType.SHENANDOAH_FINAL_MARK_START_EVAC;
-            } else if (trigger.equals(Trigger.SHENANDOAH_FINAL_UPDATE_REFS)) {
-                triggerType = Trigger.TriggerType.SHENANDOAH_FINAL_UPDATE_REFS;
-            } else if (trigger.equals(Trigger.SHENANDOAH_INIT_MARK)) {
-                triggerType = Trigger.TriggerType.SHENANDOAH_INIT_MARK;
-            } else if (trigger.equals(Trigger.SHENANDOAH_INIT_UPDATE_REFS)) {
-                triggerType = Trigger.TriggerType.SHENANDOAH_INIT_UPDATE_REFS;
-            } else if (trigger.equals(Trigger.THREAD_DUMP)) {
-                triggerType = Trigger.TriggerType.THREAD_DUMP;
+            String triggerLiteral = matcher.group(13);
+            if (triggerLiteral.equals(Safepoint.BULK_REVOKE_BIAS)) {
+                trigger = Safepoint.Trigger.BULK_REVOKE_BIAS;
+            } else if (triggerLiteral.equals(Safepoint.CMS_FINAL_REMARK)) {
+                trigger = Safepoint.Trigger.CMS_FINAL_REMARK;
+            } else if (triggerLiteral.equals(Safepoint.CMS_INITIAL_MARK)) {
+                trigger = Safepoint.Trigger.CMS_INITIAL_MARK;
+            } else if (triggerLiteral.equals(Safepoint.COLLECT_FOR_METADATA_ALLOCATION)) {
+                trigger = Safepoint.Trigger.COLLECT_FOR_METADATA_ALLOCATION;
+            } else if (triggerLiteral.equals(Safepoint.DEOPTIMIZE)) {
+                trigger = Safepoint.Trigger.DEOPTIMIZE;
+            } else if (triggerLiteral.equals(Safepoint.ENABLE_BIASED_LOCKING)) {
+                trigger = Safepoint.Trigger.ENABLE_BIASED_LOCKING;
+            } else if (triggerLiteral.equals(Safepoint.EXIT)) {
+                trigger = Safepoint.Trigger.EXIT;
+            } else if (triggerLiteral.equals(Safepoint.FIND_DEADLOCKS)) {
+                trigger = Safepoint.Trigger.FIND_DEADLOCKS;
+            } else if (triggerLiteral.equals(Safepoint.G1_COLLECT_FOR_ALLOCATION)) {
+                trigger = Safepoint.Trigger.G1_COLLECT_FOR_ALLOCATION;
+            } else if (triggerLiteral.equals(Safepoint.FORCE_SAFEPOINT)) {
+                trigger = Safepoint.Trigger.FORCE_SAFEPOINT;
+            } else if (triggerLiteral.equals(Safepoint.G1_INC_COLLECTION_PAUSE)) {
+                trigger = Safepoint.Trigger.G1_INC_COLLECTION_PAUSE;
+            } else if (triggerLiteral.equals(Safepoint.CGC_OPERATION)) {
+                trigger = Safepoint.Trigger.CGC_OPERATION;
+            } else if (triggerLiteral.equals(Safepoint.GEN_COLLECT_FOR_ALLOCATION)) {
+                trigger = Safepoint.Trigger.GEN_COLLECT_FOR_ALLOCATION;
+            } else if (triggerLiteral.equals(Safepoint.GEN_COLLECT_FULL_CONCURRENT)) {
+                trigger = Safepoint.Trigger.GEN_COLLECT_FULL_CONCURRENT;
+            } else if (triggerLiteral.equals(Safepoint.GET_ALL_STACK_TRACES)) {
+                trigger = Safepoint.Trigger.GET_ALL_STACK_TRACES;
+            } else if (triggerLiteral.equals(Safepoint.GET_THREAD_LIST_STACK_TRACES)) {
+                trigger = Safepoint.Trigger.GET_THREAD_LIST_STACK_TRACES;
+            } else if (triggerLiteral.equals(Safepoint.NO_VM_OPERATION)) {
+                trigger = Safepoint.Trigger.NO_VM_OPERATION;
+            } else if (triggerLiteral.equals(Safepoint.PARALLEL_GC_FAILED_ALLOCATION)) {
+                trigger = Safepoint.Trigger.PARALLEL_GC_FAILED_ALLOCATION;
+            } else if (triggerLiteral.equals(Safepoint.PARALLEL_GC_SYSTEM_GC)) {
+                trigger = Safepoint.Trigger.PARALLEL_GC_SYSTEM_GC;
+            } else if (triggerLiteral.equals(Safepoint.PRINT_JNI)) {
+                trigger = Safepoint.Trigger.PRINT_JNI;
+            } else if (triggerLiteral.equals(Safepoint.PRINT_THREADS)) {
+                trigger = Safepoint.Trigger.PRINT_THREADS;
+            } else if (triggerLiteral.equals(Safepoint.REVOKE_BIAS)) {
+                trigger = Safepoint.Trigger.REVOKE_BIAS;
+            } else if (triggerLiteral.equals(Safepoint.SHENANDOAH_DEGENERATED_GC)) {
+                trigger = Safepoint.Trigger.SHENANDOAH_DEGENERATED_GC;
+            } else if (triggerLiteral.equals(Safepoint.SHENANDOAH_FINAL_MARK_START_EVAC)) {
+                trigger = Safepoint.Trigger.SHENANDOAH_FINAL_MARK_START_EVAC;
+            } else if (triggerLiteral.equals(Safepoint.SHENANDOAH_FINAL_UPDATE_REFS)) {
+                trigger = Safepoint.Trigger.SHENANDOAH_FINAL_UPDATE_REFS;
+            } else if (triggerLiteral.equals(Safepoint.SHENANDOAH_INIT_MARK)) {
+                trigger = Safepoint.Trigger.SHENANDOAH_INIT_MARK;
+            } else if (triggerLiteral.equals(Safepoint.SHENANDOAH_INIT_UPDATE_REFS)) {
+                trigger = Safepoint.Trigger.SHENANDOAH_INIT_UPDATE_REFS;
+            } else if (triggerLiteral.equals(Safepoint.THREAD_DUMP)) {
+                trigger = Safepoint.Trigger.THREAD_DUMP;
             }
             threadsTotal = Integer.parseInt(matcher.group(14));
             threadsSpinning = Integer.parseInt(matcher.group(15));
@@ -350,8 +333,8 @@ public class SafepointEvent implements LogEvent {
         return timeSync + timeCleanup + timeVmop;
     }
 
-    public TriggerType getTriggerType() {
-        return triggerType;
+    public Trigger getTrigger() {
+        return trigger;
     }
 
 }

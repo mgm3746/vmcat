@@ -16,7 +16,7 @@ package org.github.vmcat.domain.jdk;
 
 import org.github.vmcat.util.jdk.JdkUtil;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
-import org.github.vmcat.util.jdk.Trigger;
+import org.github.vmcat.util.jdk.Safepoint;
 import org.junit.Assert;
 
 import junit.framework.TestCase;
@@ -33,7 +33,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 301, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.CGC_OPERATION, event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.CGC_OPERATION, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 1,
@@ -58,8 +58,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 52726, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.CMS_FINAL_REMARK,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.CMS_FINAL_REMARK, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 1,
@@ -84,8 +83,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 32636, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.CMS_INITIAL_MARK,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.CMS_INITIAL_MARK, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 1,
@@ -110,7 +108,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 1574106, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.EXIT, event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.EXIT, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 55,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -135,8 +133,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 678484, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.FORCE_SAFEPOINT,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.FORCE_SAFEPOINT, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2370,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 2,
@@ -161,8 +158,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 19840, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.G1_COLLECT_FOR_ALLOCATION,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.G1_COLLECT_FOR_ALLOCATION,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -187,8 +184,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 32316, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.G1_INC_COLLECTION_PAUSE,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.G1_INC_COLLECTION_PAUSE,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -213,8 +210,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 31960, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.GET_ALL_STACK_TRACES,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.GET_ALL_STACK_TRACES,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 194,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -239,8 +236,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 5746478, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.GET_THREAD_LIST_STACK_TRACES,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.GET_THREAD_LIST_STACK_TRACES,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 157,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -278,8 +275,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 3339, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.GEN_COLLECT_FOR_ALLOCATION,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.GEN_COLLECT_FOR_ALLOCATION,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -300,7 +297,7 @@ public class TestSafepointEvent extends TestCase {
     public void testParseLogLine() {
         String logLine = "1665.730: RevokeBias                       [    2409          2             74    ]      "
                 + "[     3     2    10    30     0    ]  1";
-        Assert.assertTrue(Trigger.TriggerType.REVOKE_BIAS.name() + " not parsed.",
+        Assert.assertTrue(Safepoint.Trigger.REVOKE_BIAS.name() + " not parsed.",
                 JdkUtil.parseLogLine(logLine) instanceof SafepointEvent);
     }
 
@@ -316,8 +313,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 44980, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.SHENANDOAH_DEGENERATED_GC,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.SHENANDOAH_DEGENERATED_GC,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -342,8 +339,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 419, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.SHENANDOAH_FINAL_MARK_START_EVAC,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.SHENANDOAH_FINAL_MARK_START_EVAC,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 1,
@@ -368,8 +365,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 499, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.SHENANDOAH_FINAL_UPDATE_REFS,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.SHENANDOAH_FINAL_UPDATE_REFS,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 1,
@@ -394,8 +391,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 413, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.SHENANDOAH_INIT_MARK,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.SHENANDOAH_INIT_MARK,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -420,8 +417,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 424, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.SHENANDOAH_INIT_UPDATE_REFS,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.SHENANDOAH_INIT_UPDATE_REFS,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 9,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 1,
@@ -446,8 +443,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 1618652, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.BULK_REVOKE_BIAS,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.BULK_REVOKE_BIAS, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2456,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -472,8 +468,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 11304, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.COLLECT_FOR_METADATA_ALLOCATION,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.COLLECT_FOR_METADATA_ALLOCATION,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 25,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -498,7 +494,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 1127742, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.DEOPTIMIZE, event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.DEOPTIMIZE, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2531,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -523,8 +519,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 9086, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.ENABLE_BIASED_LOCKING,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.ENABLE_BIASED_LOCKING,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 22,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -549,8 +545,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 1659252, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.FIND_DEADLOCKS,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.FIND_DEADLOCKS, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2404,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -575,8 +570,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 47775, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.GEN_COLLECT_FOR_ALLOCATION,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.GEN_COLLECT_FOR_ALLOCATION,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 8,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -601,8 +596,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 864397, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.PARALLEL_GC_FAILED_ALLOCATION,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.PARALLEL_GC_FAILED_ALLOCATION,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2379,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 3,
@@ -627,8 +622,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 276888, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.PARALLEL_GC_SYSTEM_GC,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.PARALLEL_GC_SYSTEM_GC,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 1565,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -653,7 +648,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 1659220, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.PRINT_JNI, event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.PRINT_JNI, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2404,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -678,7 +673,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 1149958, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.PRINT_THREADS, event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.PRINT_THREADS, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2411,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 2,
@@ -703,7 +698,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 1665730, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.REVOKE_BIAS, event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.REVOKE_BIAS, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 2409,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 2,
@@ -728,7 +723,7 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 236953, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.THREAD_DUMP, event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.THREAD_DUMP, event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 908,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
@@ -753,8 +748,8 @@ public class TestSafepointEvent extends TestCase {
                 SafepointEvent.match(logLine));
         SafepointEvent event = new SafepointEvent(logLine);
         Assert.assertEquals("Time stamp not parsed correctly.", 25520596, event.getTimestamp());
-        Assert.assertEquals("Trigger not parsed correctly.", Trigger.TriggerType.GEN_COLLECT_FULL_CONCURRENT,
-                event.getTriggerType());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.GEN_COLLECT_FULL_CONCURRENT,
+                event.getTrigger());
         Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 191,
                 event.getThreadsTotal());
         Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,

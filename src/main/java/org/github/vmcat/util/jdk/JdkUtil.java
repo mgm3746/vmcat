@@ -315,7 +315,8 @@ public class JdkUtil {
                     + Constants.LINE_SEPARATOR + currentSafepointEvent.getLogEntry());
         } else if (currentSafepointEvent.getTimestamp() < (previouseSafepointEvent.getTimestamp()
                 + previouseSafepointEvent.getDuration() - 1000)) {
-            // Only report if overlap > 1 sec to account for small overlaps due to JDK threading issues
+            // Only report if overlap > 1 sec to account for small overlaps due to JDK
+            // threading issues
             throw new TimeWarpException(
                     "Event overlap: " + Constants.LINE_SEPARATOR + previouseSafepointEvent.getLogEntry()
                             + Constants.LINE_SEPARATOR + currentSafepointEvent.getLogEntry());
@@ -330,7 +331,8 @@ public class JdkUtil {
              */
             long interval = currentSafepointEvent.getTimestamp() + currentSafepointEvent.getDuration()
                     - previouseSafepointEvent.getTimestamp() - previouseSafepointEvent.getDuration();
-            // Determine the maximum duration for the given interval that meets the throughput goal.
+            // Determine the maximum duration for the given interval that meets the
+            // throughput goal.
             BigDecimal durationThreshold = new BigDecimal(100 - throughputThreshold);
             durationThreshold = durationThreshold.movePointLeft(2);
             durationThreshold = durationThreshold.multiply(new BigDecimal(interval));
@@ -349,7 +351,8 @@ public class JdkUtil {
      * @return the log entry with the timestamp converted to a datestamp.
      */
     public static final String convertLogEntryTimestampsToDateStamp(String logEntry, Date jvmStartDate) {
-        // Add the colon or space after the timestamp format so durations will not get picked up.
+        // Add the colon or space after the timestamp format so durations will not get
+        // picked up.
         Pattern pattern = Pattern.compile(JdkRegEx.TIMESTAMP + "(: )");
         Matcher matcher = pattern.matcher(logEntry);
         StringBuffer sb = new StringBuffer();

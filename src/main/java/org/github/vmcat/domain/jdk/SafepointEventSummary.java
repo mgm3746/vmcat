@@ -14,7 +14,7 @@
  *********************************************************************************************************************/
 package org.github.vmcat.domain.jdk;
 
-import org.github.vmcat.util.jdk.Trigger.TriggerType;
+import org.github.vmcat.util.jdk.Safepoint.Trigger;
 
 /**
  * <code>SafepointEvent</code> summary used for reporting
@@ -25,9 +25,9 @@ import org.github.vmcat.util.jdk.Trigger.TriggerType;
 public class SafepointEventSummary {
 
     /**
-     * The <code>TriggerType</code>
+     * The <code>Trigger</code>
      */
-    private TriggerType triggerType;
+    private Trigger trigger;
 
     /**
      * Total number of events.
@@ -47,8 +47,8 @@ public class SafepointEventSummary {
     /**
      * Default constructor.
      * 
-     * @param triggerType
-     *            The <code>TriggerType</code>.
+     * @param trigger
+     *            The <code>Trigger</code>.
      * @param count
      *            Number of events.
      * @param pauseTotal
@@ -56,15 +56,15 @@ public class SafepointEventSummary {
      * @param pauseMax
      *            Max pause time of events
      */
-    public SafepointEventSummary(TriggerType triggerType, long count, long pauseTotal, int pauseMax) {
-        this.triggerType = triggerType;
+    public SafepointEventSummary(Trigger trigger, long count, long pauseTotal, int pauseMax) {
+        this.trigger = trigger;
         this.count = count;
         this.pauseTotal = pauseTotal;
         this.pauseMax = pauseMax;
     }
 
-    public TriggerType getTriggerType() {
-        return triggerType;
+    public Trigger getTrigger() {
+        return trigger;
     }
 
     public long getCount() {

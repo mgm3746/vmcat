@@ -22,29 +22,28 @@ import junit.framework.TestCase;
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class TestTrigger extends TestCase {
+public class TestSafepoint extends TestCase {
 
     public void testTriggerIdentity() {
-        Trigger.TriggerType[] triggers = Trigger.TriggerType.values();
+        Safepoint.Trigger[] triggers = Safepoint.Trigger.values();
         for (int i = 0; i < triggers.length; i++) {
-            if (!triggers[i].equals(Trigger.TriggerType.UNKNOWN)) {
-                Assert.assertFalse(triggers[i].name() + " not idenitified.",
-                        Trigger.identifyTriggerType(triggers[i].name()).equals(Trigger.TriggerType.UNKNOWN));
+            if (!triggers[i].equals(Safepoint.Trigger.UNKNOWN)) {
+                Assert.assertFalse(triggers[i].name() + " not identified.",
+                        Safepoint.identifyTrigger(triggers[i].name()).equals(Safepoint.Trigger.UNKNOWN));
             }
         }
     }
 
     public void testTriggerLiteral() {
-        Trigger.TriggerType[] triggers = Trigger.TriggerType.values();
+        Safepoint.Trigger[] triggers = Safepoint.Trigger.values();
         for (int i = 0; i < triggers.length; i++) {
-            if (!triggers[i].equals(Trigger.TriggerType.UNKNOWN)) {
+            if (!triggers[i].equals(Safepoint.Trigger.UNKNOWN)) {
                 try {
-                    Trigger.getTriggerLiteral(triggers[i]);
+                    Safepoint.getTriggerLiteral(triggers[i]);
                 } catch (AssertionError e) {
                     Assert.fail(triggers[i].name() + " literal not found.");
                 }
             }
         }
     }
-
 }

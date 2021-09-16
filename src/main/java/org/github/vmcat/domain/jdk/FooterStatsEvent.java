@@ -17,6 +17,7 @@ package org.github.vmcat.domain.jdk;
 import org.github.vmcat.domain.ThrowAwayEvent;
 import org.github.vmcat.util.jdk.JdkRegEx;
 import org.github.vmcat.util.jdk.JdkUtil;
+import org.github.vmcat.util.jdk.Safepoint;
 
 /**
  * <p>
@@ -49,7 +50,7 @@ public class FooterStatsEvent implements ThrowAwayEvent {
             //
             "^Polling page always armed$",
             //
-            "^" + SafepointEvent.TRIGGER + "[ ]{1,32}" + JdkRegEx.NUMBER + "$",
+            "^" + Safepoint.triggerRegEx() + "[ ]{1,32}" + JdkRegEx.NUMBER + "$",
             //
             "^[ ]{0,4} " + JdkRegEx.NUMBER + " VM operations coalesced during safepoint",
             //

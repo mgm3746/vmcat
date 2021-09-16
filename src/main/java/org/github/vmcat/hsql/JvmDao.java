@@ -28,8 +28,8 @@ import org.github.vmcat.domain.jdk.SafepointEventSummary;
 import org.github.vmcat.util.jdk.Analysis;
 import org.github.vmcat.util.jdk.JdkUtil;
 import org.github.vmcat.util.jdk.JdkUtil.LogEventType;
-import org.github.vmcat.util.jdk.Trigger;
-import org.github.vmcat.util.jdk.Trigger.TriggerType;
+import org.github.vmcat.util.jdk.Safepoint;
+import org.github.vmcat.util.jdk.Safepoint.Trigger;
 
 /**
  * <p>
@@ -111,7 +111,8 @@ public class JvmDao {
             // Connect to database.
 
             // Database server for development
-            // connection = DriverManager.getConnection("jdbc:hsqldb:hsql://localhost/xdb", "sa",
+            // connection = DriverManager.getConnection("jdbc:hsqldb:hsql://localhost/xdb",
+            // "sa",
             // "");
 
             // In-process standalone mode for deployment.
@@ -218,7 +219,7 @@ public class JvmDao {
                 SafepointEvent event = safepointBatch.get(i);
                 pst.setLong(TIME_STAMP_INDEX, event.getTimestamp());
                 // Use trigger for event name
-                pst.setString(TRIGGER_TYPE_INDEX, event.getTriggerType().toString());
+                pst.setString(TRIGGER_TYPE_INDEX, event.getTrigger().toString());
                 pst.setInt(THREADS_TOTAL_INDEX, event.getThreadsTotal());
                 pst.setInt(THREADS_SPIN_INDEX, event.getThreadsSpinning());
                 pst.setInt(THREADS_BLOCK_INDEX, event.getThreadsBlocked());
@@ -558,8 +559,8 @@ public class JvmDao {
                     + "safepoint_event group by trigger_type order by sum(sync + cleanup + vmop) desc");
             rs = statement.executeQuery(sql.toString());
             while (rs.next()) {
-                TriggerType triggerType = Trigger.identifyTriggerType(rs.getString(1));
-                SafepointEventSummary summary = new SafepointEventSummary(triggerType, rs.getLong(2), rs.getLong(3),
+                Trigger trigger = Safepoint.identifyTrigger(rs.getString(1));
+                SafepointEventSummary summary = new SafepointEventSummary(trigger, rs.getLong(2), rs.getLong(3),
                         rs.getInt(4));
                 safepointEventSummaries.add(summary);
             }

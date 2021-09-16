@@ -16,33 +16,33 @@ package org.github.vmcat.util.jdk;
 
 /**
  * <p>
- * Regular expression constants for safepoint triggers.
+ * Regular expression constants for safepoints.
  * </p>
  * 
  * @author <a href="mailto:mmillson@redhat.com">Mike Millson</a>
  * 
  */
-public class Trigger {
+public class Safepoint {
 
     /**
      * Defined triggers.
      * 
      * TODO: Split into GC vs. non-GC?
      */
-    public enum TriggerType {
-        BULK_REVOKE_BIAS, CGC_OPERATION, CMS_FINAL_REMARK, CMS_INITIAL_MARK, COLLECT_FOR_METADATA_ALLOCATION,
+    public enum Trigger {
+        BULK_REVOKE_BIAS, CGC_OPERATION, CLEANUP, CMS_FINAL_REMARK, CMS_INITIAL_MARK, COLLECT_FOR_METADATA_ALLOCATION,
         //
         DEOPTIMIZE, ENABLE_BIASED_LOCKING, EXIT, FIND_DEADLOCKS, FORCE_SAFEPOINT,
         //
         G1_COLLECT_FOR_ALLOCATION, G1_INC_COLLECTION_PAUSE, GEN_COLLECT_FOR_ALLOCATION, GEN_COLLECT_FULL_CONCURRENT,
         //
-        GET_ALL_STACK_TRACES, GET_THREAD_LIST_STACK_TRACES, NO_VM_OPERATION, PARALLEL_GC_FAILED_ALLOCATION,
+        GET_ALL_STACK_TRACES, GET_THREAD_LIST_STACK_TRACES, IC_BUFFER_FULL, NO_VM_OPERATION,
         //
-        PARALLEL_GC_SYSTEM_GC, PRINT_JNI, PRINT_THREADS, REVOKE_BIAS, SHENANDOAH_DEGENERATED_GC,
+        PARALLEL_GC_FAILED_ALLOCATION, PARALLEL_GC_SYSTEM_GC, PRINT_JNI, PRINT_THREADS, REVOKE_BIAS,
         //
-        SHENANDOAH_FINAL_MARK_START_EVAC, SHENANDOAH_FINAL_UPDATE_REFS, SHENANDOAH_INIT_MARK,
+        SHENANDOAH_DEGENERATED_GC, SHENANDOAH_FINAL_MARK_START_EVAC, SHENANDOAH_FINAL_UPDATE_REFS,
         //
-        SHENANDOAH_INIT_UPDATE_REFS, THREAD_DUMP, UNKNOWN
+        SHENANDOAH_INIT_MARK, SHENANDOAH_INIT_UPDATE_REFS, THREAD_DUMP, UNKNOWN
     };
 
     /**
@@ -60,6 +60,14 @@ public class Trigger {
      * </p>
      */
     public static final String CGC_OPERATION = "CGC_Operation";
+
+    /**
+     * <p>
+     * Various cleanup operations that require a safepoint: deflate monitors, update inline caches, compilation policy,
+     * symbol table rehash, string table rehash, CLD purge, dictionary resize.
+     * </p>
+     */
+    public static final String CLEANUP = "Cleanup";
 
     /**
      * <p>
@@ -178,6 +186,13 @@ public class Trigger {
 
     /**
      * <p>
+     * Safepoint for managing inline cache buffer when it is full (clear? resize?).
+     * </p>
+     */
+    public static final String IC_BUFFER_FULL = "ICBufferFull";
+
+    /**
+     * <p>
      * Guaranteed safepoint to process non-urgent JVM operations. The interval is enabled by
      * <code>-XX:+UnlockDiagnosticVMOptions</code> and controlled by <code>-XX:GuaranteedSafepointInterval=N</code>
      * (default 300000 seconds = 5 minutes).
@@ -274,19 +289,25 @@ public class Trigger {
     public static final String THREAD_DUMP = "ThreadDump";
 
     /**
-     * Get <code>TriggerType</code> vm log literal.
+     * Get <code>Trigger</code> vm log literal.
      * 
-     * @param triggerType
-     *            The trigger type.
+     * @param trigger
+     *            The trigger.
      * @return The trigger literal in the vm log line.
      */
-    public static final String getTriggerLiteral(TriggerType triggerType) {
+    public static final String getTriggerLiteral(Trigger trigger) {
         String triggerLiteral = null;
 
-        switch (triggerType) {
+        switch (trigger) {
 
         case BULK_REVOKE_BIAS:
             triggerLiteral = BULK_REVOKE_BIAS;
+            break;
+        case CLEANUP:
+            triggerLiteral = CLEANUP;
+            break;
+        case CGC_OPERATION:
+            triggerLiteral = CGC_OPERATION;
             break;
         case CMS_FINAL_REMARK:
             triggerLiteral = CMS_FINAL_REMARK;
@@ -318,9 +339,6 @@ public class Trigger {
         case G1_INC_COLLECTION_PAUSE:
             triggerLiteral = G1_INC_COLLECTION_PAUSE;
             break;
-        case CGC_OPERATION:
-            triggerLiteral = CGC_OPERATION;
-            break;
         case GEN_COLLECT_FOR_ALLOCATION:
             triggerLiteral = GEN_COLLECT_FOR_ALLOCATION;
             break;
@@ -332,6 +350,9 @@ public class Trigger {
             break;
         case GET_THREAD_LIST_STACK_TRACES:
             triggerLiteral = GET_THREAD_LIST_STACK_TRACES;
+            break;
+        case IC_BUFFER_FULL:
+            triggerLiteral = IC_BUFFER_FULL;
             break;
         case NO_VM_OPERATION:
             triggerLiteral = NO_VM_OPERATION;
@@ -371,7 +392,7 @@ public class Trigger {
             break;
 
         default:
-            throw new AssertionError("Unexpected trigger type value: " + triggerType);
+            throw new AssertionError("Unexpected trigger value: " + trigger);
         }
         return triggerLiteral;
     }
@@ -380,69 +401,98 @@ public class Trigger {
      * Identify the safepoint trigger.
      * 
      * @param trigger
-     *            The TriggerType String stored in the database.
-     * @return The <code>TriggerType</code>.
+     *            The Trigger String stored in the database.
+     * @return The <code>Trigger</code>.
      */
-    public static final TriggerType identifyTriggerType(String trigger) {
-        if (TriggerType.BULK_REVOKE_BIAS.name().matches(trigger))
-            return TriggerType.BULK_REVOKE_BIAS;
-        if (TriggerType.CGC_OPERATION.name().matches(trigger))
-            return TriggerType.CGC_OPERATION;
-        if (TriggerType.COLLECT_FOR_METADATA_ALLOCATION.name().matches(trigger))
-            return TriggerType.COLLECT_FOR_METADATA_ALLOCATION;
-        if (TriggerType.CMS_FINAL_REMARK.name().matches(trigger))
-            return TriggerType.CMS_FINAL_REMARK;
-        if (TriggerType.CMS_INITIAL_MARK.name().matches(trigger))
-            return TriggerType.CMS_INITIAL_MARK;
-        if (TriggerType.DEOPTIMIZE.name().matches(trigger))
-            return TriggerType.DEOPTIMIZE;
-        if (TriggerType.ENABLE_BIASED_LOCKING.name().matches(trigger))
-            return TriggerType.ENABLE_BIASED_LOCKING;
-        if (TriggerType.EXIT.name().matches(trigger))
-            return TriggerType.EXIT;
-        if (TriggerType.FIND_DEADLOCKS.name().matches(trigger))
-            return TriggerType.FIND_DEADLOCKS;
-        if (TriggerType.FORCE_SAFEPOINT.name().matches(trigger))
-            return TriggerType.FORCE_SAFEPOINT;
-        if (TriggerType.G1_COLLECT_FOR_ALLOCATION.name().matches(trigger))
-            return TriggerType.G1_COLLECT_FOR_ALLOCATION;
-        if (TriggerType.G1_INC_COLLECTION_PAUSE.name().matches(trigger))
-            return TriggerType.G1_INC_COLLECTION_PAUSE;
-        if (TriggerType.GEN_COLLECT_FOR_ALLOCATION.name().matches(trigger))
-            return TriggerType.GEN_COLLECT_FOR_ALLOCATION;
-        if (TriggerType.GEN_COLLECT_FULL_CONCURRENT.name().matches(trigger))
-            return TriggerType.GEN_COLLECT_FULL_CONCURRENT;
-        if (TriggerType.GET_ALL_STACK_TRACES.name().matches(trigger))
-            return TriggerType.GET_ALL_STACK_TRACES;
-        if (TriggerType.GET_THREAD_LIST_STACK_TRACES.name().matches(trigger))
-            return TriggerType.GET_THREAD_LIST_STACK_TRACES;
-        if (TriggerType.NO_VM_OPERATION.name().matches(trigger))
-            return TriggerType.NO_VM_OPERATION;
-        if (TriggerType.PARALLEL_GC_FAILED_ALLOCATION.name().matches(trigger))
-            return TriggerType.PARALLEL_GC_FAILED_ALLOCATION;
-        if (TriggerType.PARALLEL_GC_SYSTEM_GC.name().matches(trigger))
-            return TriggerType.PARALLEL_GC_SYSTEM_GC;
-        if (TriggerType.PRINT_JNI.name().matches(trigger))
-            return TriggerType.PRINT_JNI;
-        if (TriggerType.PRINT_THREADS.name().matches(trigger))
-            return TriggerType.PRINT_THREADS;
-        if (TriggerType.REVOKE_BIAS.name().matches(trigger))
-            return TriggerType.REVOKE_BIAS;
-        if (TriggerType.SHENANDOAH_DEGENERATED_GC.name().matches(trigger))
-            return TriggerType.SHENANDOAH_DEGENERATED_GC;
-        if (TriggerType.SHENANDOAH_FINAL_MARK_START_EVAC.name().matches(trigger))
-            return TriggerType.SHENANDOAH_FINAL_MARK_START_EVAC;
-        if (TriggerType.SHENANDOAH_FINAL_UPDATE_REFS.name().matches(trigger))
-            return TriggerType.SHENANDOAH_FINAL_UPDATE_REFS;
-        if (TriggerType.SHENANDOAH_INIT_MARK.name().matches(trigger))
-            return TriggerType.SHENANDOAH_INIT_MARK;
-        if (TriggerType.SHENANDOAH_INIT_UPDATE_REFS.name().matches(trigger))
-            return TriggerType.SHENANDOAH_INIT_UPDATE_REFS;
-        if (TriggerType.THREAD_DUMP.name().matches(trigger))
-            return TriggerType.THREAD_DUMP;
+    public static final Trigger identifyTrigger(String trigger) {
+        if (Trigger.BULK_REVOKE_BIAS.name().matches(trigger))
+            return Trigger.BULK_REVOKE_BIAS;
+        if (Trigger.CGC_OPERATION.name().matches(trigger))
+            return Trigger.CGC_OPERATION;
+        if (Trigger.CLEANUP.name().matches(trigger))
+            return Trigger.CLEANUP;
+        if (Trigger.COLLECT_FOR_METADATA_ALLOCATION.name().matches(trigger))
+            return Trigger.COLLECT_FOR_METADATA_ALLOCATION;
+        if (Trigger.CMS_FINAL_REMARK.name().matches(trigger))
+            return Trigger.CMS_FINAL_REMARK;
+        if (Trigger.CMS_INITIAL_MARK.name().matches(trigger))
+            return Trigger.CMS_INITIAL_MARK;
+        if (Trigger.DEOPTIMIZE.name().matches(trigger))
+            return Trigger.DEOPTIMIZE;
+        if (Trigger.ENABLE_BIASED_LOCKING.name().matches(trigger))
+            return Trigger.ENABLE_BIASED_LOCKING;
+        if (Trigger.EXIT.name().matches(trigger))
+            return Trigger.EXIT;
+        if (Trigger.FIND_DEADLOCKS.name().matches(trigger))
+            return Trigger.FIND_DEADLOCKS;
+        if (Trigger.FORCE_SAFEPOINT.name().matches(trigger))
+            return Trigger.FORCE_SAFEPOINT;
+        if (Trigger.G1_COLLECT_FOR_ALLOCATION.name().matches(trigger))
+            return Trigger.G1_COLLECT_FOR_ALLOCATION;
+        if (Trigger.G1_INC_COLLECTION_PAUSE.name().matches(trigger))
+            return Trigger.G1_INC_COLLECTION_PAUSE;
+        if (Trigger.GEN_COLLECT_FOR_ALLOCATION.name().matches(trigger))
+            return Trigger.GEN_COLLECT_FOR_ALLOCATION;
+        if (Trigger.GEN_COLLECT_FULL_CONCURRENT.name().matches(trigger))
+            return Trigger.GEN_COLLECT_FULL_CONCURRENT;
+        if (Trigger.GET_ALL_STACK_TRACES.name().matches(trigger))
+            return Trigger.GET_ALL_STACK_TRACES;
+        if (Trigger.GET_THREAD_LIST_STACK_TRACES.name().matches(trigger))
+            return Trigger.GET_THREAD_LIST_STACK_TRACES;
+        if (Trigger.IC_BUFFER_FULL.name().matches(trigger))
+            return Trigger.IC_BUFFER_FULL;
+        if (Trigger.NO_VM_OPERATION.name().matches(trigger))
+            return Trigger.NO_VM_OPERATION;
+        if (Trigger.PARALLEL_GC_FAILED_ALLOCATION.name().matches(trigger))
+            return Trigger.PARALLEL_GC_FAILED_ALLOCATION;
+        if (Trigger.PARALLEL_GC_SYSTEM_GC.name().matches(trigger))
+            return Trigger.PARALLEL_GC_SYSTEM_GC;
+        if (Trigger.PRINT_JNI.name().matches(trigger))
+            return Trigger.PRINT_JNI;
+        if (Trigger.PRINT_THREADS.name().matches(trigger))
+            return Trigger.PRINT_THREADS;
+        if (Trigger.REVOKE_BIAS.name().matches(trigger))
+            return Trigger.REVOKE_BIAS;
+        if (Trigger.SHENANDOAH_DEGENERATED_GC.name().matches(trigger))
+            return Trigger.SHENANDOAH_DEGENERATED_GC;
+        if (Trigger.SHENANDOAH_FINAL_MARK_START_EVAC.name().matches(trigger))
+            return Trigger.SHENANDOAH_FINAL_MARK_START_EVAC;
+        if (Trigger.SHENANDOAH_FINAL_UPDATE_REFS.name().matches(trigger))
+            return Trigger.SHENANDOAH_FINAL_UPDATE_REFS;
+        if (Trigger.SHENANDOAH_INIT_MARK.name().matches(trigger))
+            return Trigger.SHENANDOAH_INIT_MARK;
+        if (Trigger.SHENANDOAH_INIT_UPDATE_REFS.name().matches(trigger))
+            return Trigger.SHENANDOAH_INIT_UPDATE_REFS;
+        if (Trigger.THREAD_DUMP.name().matches(trigger))
+            return Trigger.THREAD_DUMP;
 
         // no idea what trigger is
-        return TriggerType.UNKNOWN;
+        return Trigger.UNKNOWN;
     }
 
+    /**
+     * Convenience method for concatenating triggers into a regular expression. For example:
+     * 
+     * "(trigger1|trigger2|trigger3)"
+     *
+     * @return The <code>Trigger</code> regular expression.
+     */
+    public static final String triggerRegEx() {
+        StringBuilder regex = new StringBuilder();
+        regex.append("(");
+        Safepoint.Trigger[] triggers = Safepoint.Trigger.values();
+        boolean firstTrigger = true;
+        for (int i = 0; i < triggers.length; i++) {
+            if (triggers[i] != Trigger.UNKNOWN) {
+                if (!firstTrigger) {
+                    regex.append("|");
+                } else {
+                    firstTrigger = false;
+                }
+                regex.append(getTriggerLiteral(triggers[i]));
+            }
+        }
+        regex.append(")");
+        return regex.toString();
+    }
 }
