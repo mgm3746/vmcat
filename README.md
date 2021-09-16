@@ -8,7 +8,7 @@ A command line tool to parse Java -XX:+LogVMOutput and do analysis to support JV
   
  ### Recommended JVM Options
  
- >-XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1
+ >-XX:+UnlockDiagnosticVMOptions -XX:+PrintSafepointStatistics -XX:PrintSafepointStatisticsCount=1 -XX:+LogVMOutput -XX:LogFile=/path/to/vm.log
  
 ## Building
 
