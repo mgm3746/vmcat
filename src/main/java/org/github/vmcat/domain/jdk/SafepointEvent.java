@@ -176,6 +176,8 @@ public class SafepointEvent implements LogEvent {
                 trigger = Safepoint.Trigger.PRINT_JNI;
             } else if (triggerLiteral.equals(Safepoint.PRINT_THREADS)) {
                 trigger = Safepoint.Trigger.PRINT_THREADS;
+            } else if (triggerLiteral.equals(Safepoint.REDEFINE_CLASSES)) {
+                trigger = Safepoint.Trigger.REDEFINE_CLASSES;
             } else if (triggerLiteral.equals(Safepoint.REVOKE_BIAS)) {
                 trigger = Safepoint.Trigger.REVOKE_BIAS;
             } else if (triggerLiteral.equals(Safepoint.SHENANDOAH_DEGENERATED_GC)) {

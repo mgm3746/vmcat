@@ -767,6 +767,31 @@ public class TestSafepointEvent extends TestCase {
         Assert.assertEquals("Duration not calculated correctly.", 39, event.getDuration());
     }
 
+    public void testTriggerRedefineClasses() {
+        String logLine = "10.875: RedefineClasses                  [      13          0              0    ]      "
+                + "[     0     0     0     0    30    ]  0";
+        Assert.assertTrue("Log line not recognized as " + JdkUtil.LogEventType.SAFEPOINT.name() + ".",
+                SafepointEvent.match(logLine));
+        SafepointEvent event = new SafepointEvent(logLine);
+        Assert.assertEquals("Time stamp not parsed correctly.", 10875, event.getTimestamp());
+        Assert.assertEquals("Trigger not parsed correctly.", Safepoint.Trigger.REDEFINE_CLASSES, event.getTrigger());
+        Assert.assertEquals("Total number of threads stopped in safepoint not parsed correctly.", 13,
+                event.getThreadsTotal());
+        Assert.assertEquals("Number of threads that were spinning before safepoint not parsed correctly.", 0,
+                event.getThreadsSpinning());
+        Assert.assertEquals("Number of threads that were blocked before safepoint not parsed correctly.", 0,
+                event.getThreadsBlocked());
+        Assert.assertEquals("Time for spinning threads to reach safepoint.", 0, event.getTimeSpin());
+        Assert.assertEquals("Time for blocked threads to reach safepoint not parsed correctly.", 0,
+                event.getTimeBlock());
+        Assert.assertEquals("Time for all threads to reach safepoint (sync) not parsed correctly.", 0,
+                event.getTimeSync());
+        Assert.assertEquals("Time for cleanup activities not parsed correctly.", 0, event.getTimeCleanup());
+        Assert.assertEquals("Time for safepoint activity (vmop) not parsed correctly.", 30, event.getTimeVmop());
+        Assert.assertEquals("Page trap count not parsed correctly.", 0, event.getPageTrapCount());
+        Assert.assertEquals("Duration not calculated correctly.", 30, event.getDuration());
+    }
+
     public void testWhiteSpaceAtEnd() {
         String logLine = "1665.730: RevokeBias                       [    2409          2             74    ]      "
                 + "[     3     2    10    30     0    ]  1     ";
