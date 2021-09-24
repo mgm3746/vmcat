@@ -3,8 +3,13 @@ A command line tool to parse Java -XX:+LogVMOutput and do analysis to support JV
 
 ## Supports
 
-  * OpenJDK
-  * Oracle JDK
+OpenJDK8 derivatives:
+* AdoptOpenJDK
+* Azul
+* Microsoft Build of OpenJDK
+* Oracle JDK
+* Red Hat build of OpenJDK
+* etc.
   
  ### Recommended JVM Options
  
