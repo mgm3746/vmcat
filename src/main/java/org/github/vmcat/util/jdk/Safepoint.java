@@ -66,6 +66,16 @@ public class Safepoint {
      * Various cleanup operations that require a safepoint: deflate monitors, update inline caches, compilation policy,
      * symbol table rehash, string table rehash, CLD purge, dictionary resize.
      * </p>
+     * 
+     * <p>
+     * Guaranteed safepoint to process non-urgent JVM operations. The interval is enabled by
+     * <code>-XX:+UnlockDiagnosticVMOptions</code> and controlled by <code>-XX:GuaranteedSafepointInterval=N</code>
+     * (default 300000 seconds = 5 minutes).
+     * </p>
+     * 
+     * <p>
+     * Same as <code>Safepoint.NO_VM_OPERATION</code>.
+     * </p>
      */
     public static final String CLEANUP = "Cleanup";
 
@@ -193,9 +203,18 @@ public class Safepoint {
 
     /**
      * <p>
+     * Various cleanup operations that require a safepoint: deflate monitors, update inline caches, compilation policy,
+     * symbol table rehash, string table rehash, CLD purge, dictionary resize.
+     * </p>
+     * 
+     * <p>
      * Guaranteed safepoint to process non-urgent JVM operations. The interval is enabled by
      * <code>-XX:+UnlockDiagnosticVMOptions</code> and controlled by <code>-XX:GuaranteedSafepointInterval=N</code>
      * (default 300000 seconds = 5 minutes).
+     * </p>
+     * 
+     * <p>
+     * Same as <code>Safepoint.CLEANUP</code>.
      * </p>
      */
     public static final String NO_VM_OPERATION = "no vm operation";
