@@ -331,7 +331,7 @@ public class SafepointEvent implements LogEvent {
         this.pageTrapCount = pageTrapCount;
     }
 
-    public int getDuration() {
+    public long getDuration() {
         return timeSync + timeCleanup + timeVmop;
     }
 
