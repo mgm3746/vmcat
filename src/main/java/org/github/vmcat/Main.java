@@ -191,21 +191,21 @@ public class Main {
      *             Command line options not valid.
      */
     public static void validateOptions(CommandLine cmd) throws ParseException {
-        // Ensure log file specified.
+        // Ensure command line input.
         if (cmd.getArgList().size() == 0) {
-            throw new ParseException("Missing log file");
-        }
-        String logFileName = null;
-        if (cmd.getArgList().size() > 0) {
-            logFileName = (String) cmd.getArgList().get(cmd.getArgList().size() - 1);
-        }
-        // Ensure vm log file exists.
-        if (logFileName == null) {
-            throw new ParseException("Missing log file not");
-        }
-        File logFile = new File(logFileName);
-        if (!logFile.exists()) {
-            throw new ParseException("Invalid log file: '" + logFileName + "'");
+            throw new ParseException("Missing line.");
+        } else {
+            // Ensure file input.
+            String logFileName = (String) cmd.getArgList().get(cmd.getArgList().size() - 1);
+            if (logFileName == null) {
+                throw new ParseException("Missing file.");
+            } else {
+                // Ensure file exists.
+                File logFile = new File(logFileName);
+                if (!logFile.exists()) {
+                    throw new ParseException("Invalid file: '" + logFileName + "'.");
+                }
+            }
         }
         // threshold
         if (cmd.hasOption(Constants.OPTION_THRESHOLD_LONG)) {
